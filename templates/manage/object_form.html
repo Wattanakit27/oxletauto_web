@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — จัดการ{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:760px">
+
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <h3 class="text-ox mb-0">{{ title }}</h3>
+    {% if delete_url %}
+    <form method="post" action="{{ delete_url }}" class="ms-auto" onsubmit="return confirm('ลบรายการนี้ถาวร? กู้คืนไม่ได้')">
+      {% csrf_token %}
+      <button class="btn btn-sm btn-outline-danger">🗑️ ลบ</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="card border-0 shadow-sm">
+    {% csrf_token %}
+    <div class="card-body">
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="row">
+        {% for field in form %}
+        <div class="col-md-6 mb-3">
+          {% if field.field.widget.input_type == 'checkbox' %}
+            <div class="form-check mt-md-4 pt-md-2">
+              {{ field }}
+              <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            </div>
+          {% else %}
+            <label class="form-label small fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+          {% endif %}
+          {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors|striptags }}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card-footer bg-white d-flex gap-2">
+      <button class="btn btn-ox px-4">💾 บันทึก</button>
+      <a href="{{ cancel_url }}" class="btn btn-outline-secondary">ยกเลิก</a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

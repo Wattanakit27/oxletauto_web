@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}ติดต่อเรา — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<style>
+  .contact-channel{transition:background .15s,transform .15s,box-shadow .15s}
+  .contact-channel:hover{background:#f8f5fc;transform:translateY(-1px);box-shadow:0 .25rem .6rem rgba(0,0,0,.08)}
+</style>
+<div class="container py-4">
+  <h3 class="text-ox mb-3">ติดต่อเรา</h3>
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm"><div class="card-body">
+        <h6 class="text-ox">ฝากข้อมูลให้เราติดต่อกลับ</h6>
+        <form method="post">{% csrf_token %}
+          <input name="name" class="form-control mb-2" placeholder="ชื่อ" required>
+          <input name="phone" class="form-control mb-2" placeholder="เบอร์โทร" required>
+          <input name="email" class="form-control mb-2" placeholder="อีเมล (ถ้ามี)">
+          <textarea name="message" class="form-control mb-2" rows="3" placeholder="ข้อความ"></textarea>
+          <button class="btn btn-ox w-100">ส่งข้อมูล</button>
+        </form>
+      </div></div>
+    </div>
+    <div class="col-md-6">
+      <div class="d-flex align-items-center mb-1">
+        <h6 class="text-ox mb-0">ช่องทางติดต่อ</h6>
+        {% if request.user.is_staff %}<a href="{% url 'social_add' %}" class="btn btn-sm btn-success ms-auto">➕ เพิ่มช่องทาง</a>{% endif %}
+      </div>
+      <p class="text-muted small mb-2"><i class="bi bi-clock"></i> เวลาทำการ {{ SITE_HOURS }}</p>
+      <div class="d-flex flex-column gap-2 mb-4">
+        {% for s in SOCIALS %}
+        <div class="d-flex align-items-center gap-2">
+          <a href="{{ s.url }}" target="_blank" rel="noopener"
+             class="d-flex align-items-center gap-3 text-decoration-none border rounded p-2 contact-channel flex-fill">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white flex-shrink-0"
+                  style="width:40px;height:40px;background:{{ s.color }}">
+              <i class="bi {{ s.icon }} fs-5"></i>
+            </span>
+            <span class="lh-sm">
+              <span class="d-block fw-semibold text-dark">{{ s.label }}</span>
+              <span class="d-block small text-muted">{{ s.value }}</span>
+            </span>
+          </a>
+          {% if request.user.is_staff %}
+          <a href="{% url 'social_edit' s.pk %}" class="btn btn-sm btn-dark" title="แก้ไข">✏️</a>
+          <form method="post" action="{% url 'social_delete' s.pk %}" onsubmit="return confirm('ลบช่องทางนี้?')">{% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger" title="ลบ">🗑️</button>
+          </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="d-flex align-items-center mb-2">
+        <h6 class="text-ox mb-0">สาขา</h6>
+        {% if request.user.is_staff %}<a href="{% url 'branch_add' %}" class="btn btn-sm btn-success ms-auto">➕ เพิ่มสาขา</a>{% endif %}
+      </div>
+      {% for b in branches %}
+      <div class="mb-4">
+        <strong>📍 {{ b.name }}</strong>
+        {% if b.google_rating %}<span class="badge bg-warning text-dark ms-1">{{ b.google_rating }}★</span>{% endif %}<br>
+        <span class="small text-muted">{{ b.address }}</span>
+        {% if b.lat %}
+        <iframe class="w-100 rounded mt-2" height="220" style="border:0" loading="lazy" allowfullscreen
+                referrerpolicy="no-referrer-when-downgrade"
+                src="https://maps.google.com/maps?q={{ b.lat }},{{ b.lng }}&z=16&hl=th&output=embed"></iframe>
+        <a href="{{ b.google_maps_url|default:'' }}{% if not b.google_maps_url %}https://maps.google.com/?q={{ b.lat }},{{ b.lng }}{% endif %}"
+           target="_blank" class="btn btn-outline-secondary btn-sm mt-1">
+          <i class="bi bi-geo-alt-fill"></i> นำทาง / เปิดใน Google Maps
+        </a>
+        {% elif b.map_url %}
+        <br><a href="{{ b.map_url }}" class="small" target="_blank">เปิดแผนที่ →</a>
+        {% endif %}
+        {% if request.user.is_staff %}
+        <div class="d-flex gap-1 mt-2">
+          <a href="{% url 'branch_edit' b.pk %}" class="btn btn-sm btn-dark">✏️ แก้ไขสาขา</a>
+          <form method="post" action="{% url 'branch_delete' b.pk %}" onsubmit="return confirm('ลบสาขานี้?')">{% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger">🗑️ ลบ</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}เกี่ยวกับเรา — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center">
+    <h3 class="text-ox mb-0">เกี่ยวกับ {{ SITE_NAME }}</h3>
+    {% if request.user.is_staff %}<a href="{% url 'site_settings' %}" class="btn btn-sm btn-dark ms-auto">✏️ แก้ไขเนื้อหา</a>{% endif %}
+  </div>
+  <p class="lead mt-2">{{ SITE_TAGLINE }} — เจ้าแรกของไทย</p>
+  <div>{{ about_text|linebreaks }}</div>
+  <div class="row g-3 mt-2">
+    <div class="col-md-3"><div class="card border-0 shadow-sm text-center p-3"><i class="bi bi-shield-check fs-2 text-ox"></i><div class="small mt-2">ตรวจ 150+ จุด</div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm text-center p-3"><i class="bi bi-tools fs-2 text-ox"></i><div class="small mt-2">ศูนย์บริการครบวงจร</div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm text-center p-3"><i class="bi bi-percent fs-2 text-ox"></i><div class="small mt-2">ดอกเบี้ยเริ่ม 2.79%</div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm text-center p-3"><i class="bi bi-geo-alt fs-2 text-ox"></i><div class="small mt-2">2 สาขา</div></div></div>
+  </div>
+
+  {# คลิป YouTube (ดึงอัตโนมัติจากช่อง) #}
+  {% if yt_videos %}
+  <h4 class="text-ox mt-5 mb-2">คลิปจากช่อง YouTube <i class="bi bi-youtube text-danger"></i></h4>
+  <div class="row g-3">
+    {% for v in yt_videos %}
+    <div class="col-6 col-md-3">
+      <div class="vid-card" role="button" onclick="playVideo('{{ v.embed_url }}','{{ v.source }}')">
+        <div class="vid-thumb">
+          <img src="{{ v.thumbnail }}" loading="lazy" class="img-fluid rounded">
+          <span class="vid-play"><i class="bi bi-play-circle-fill"></i></span>
+        </div>
+        <div class="small mt-1 text-truncate-2">{{ v.title }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# คลิป TikTok (หลายช่อง) #}
+  {% if tt_videos %}
+  <h4 class="text-ox mt-4 mb-2">คลิป Oxlet บน TikTok <i class="bi bi-tiktok"></i></h4>
+  <div class="row g-3">
+    {% for v in tt_videos %}
+    <div class="col-6 col-md-3">
+      <div class="vid-card" role="button" onclick="playVideo('{{ v.embed_url }}','{{ v.source }}')">
+        <div class="vid-thumb portrait">
+          <img src="{{ v.thumbnail }}" loading="lazy">
+          <span class="vid-play"><i class="bi bi-play-circle-fill"></i></span>
+        </div>
+        <div class="small mt-1 text-truncate-2">{{ v.title }}</div>
+        {% if v.channel %}<div class="text-muted" style="font-size:.72rem"><i class="bi bi-tiktok"></i> {{ v.channel }}</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# Facebook — ฟีดเพจอัตโนมัติ #}
+  <h4 class="text-ox mt-5 mb-2">ติดตามเราบน Facebook <i class="bi bi-facebook text-primary"></i></h4>
+  <div class="d-flex justify-content-center">
+    <iframe
+      src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Foxlet.bankao&tabs=timeline&width=500&height=600&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true"
+      width="500" height="600" style="border:none;overflow:hidden;max-width:100%"
+      scrolling="no" frameborder="0" allowfullscreen="true"
+      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+</div>
+{% endblock %}

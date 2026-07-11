@@ -1,0 +1,177 @@
+{% load static %}
+{# ===== AI ผู้ช่วยขาย: ปุ่มวงกลมลอย (ลากย้ายได้) + หน้าต่างแชต ===== #}
+<style>
+  #oxBubble{
+    position:fixed; right:20px; bottom:20px; z-index:1090;
+    width:62px; height:62px; border-radius:50%; border:none; cursor:grab; padding:0; overflow:hidden;
+    background:#3b1c6e; color:#fff; box-shadow:0 .5rem 1.2rem rgba(0,0,0,.3);
+    display:flex; align-items:center; justify-content:center; font-size:1.7rem;
+    touch-action:none; transition:transform .15s, box-shadow .15s;
+  }
+  #oxBubble .ox-bubble-img{ width:100%; height:100%; border-radius:50%; object-fit:cover; pointer-events:none; }
+  #oxBubble:hover{ transform:scale(1.06); box-shadow:0 .6rem 1.5rem rgba(0,0,0,.4); }
+  #oxBubble:active{ cursor:grabbing; }
+  #oxBubble .ox-badge{
+    position:absolute; top:-2px; right:-2px; width:14px; height:14px;
+    background:#22c55e; border:2px solid #fff; border-radius:50%; pointer-events:none;
+  }
+
+  #oxPanel{
+    position:fixed; right:20px; bottom:92px; z-index:1091;
+    width:360px; max-width:calc(100vw - 24px); height:520px; max-height:calc(100vh - 120px);
+    background:#fff; border-radius:18px; overflow:hidden; display:none; flex-direction:column;
+    box-shadow:0 1rem 2.5rem rgba(0,0,0,.28);
+  }
+  #oxPanel.open{ display:flex; }
+  #oxPanel .ox-head{ background:#3b1c6e; color:#fff; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+  #oxPanel .ox-head .ox-ava{ width:36px; height:36px; border-radius:50%; background:#fff2; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+  #oxPanel .ox-head small{ opacity:.85; }
+  #oxClose{ margin-left:auto; background:none; border:none; color:#fff; font-size:1.4rem; line-height:1; cursor:pointer; }
+
+  #oxMsgs{ flex:1; overflow-y:auto; padding:14px; background:#f5f3f9; }
+  .ox-msg{ margin-bottom:10px; display:flex; }
+  .ox-msg .bubble{ max-width:80%; padding:9px 12px; border-radius:14px; font-size:.92rem; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
+  .ox-msg.bot .bubble{ background:#fff; color:#222; border:1px solid #e7e2f0; border-bottom-left-radius:4px; }
+  .ox-msg.user{ justify-content:flex-end; }
+  .ox-msg.user .bubble{ background:#3b1c6e; color:#fff; border-bottom-right-radius:4px; }
+  .ox-msg .bubble a{ color:inherit; text-decoration:underline; }
+  .ox-typing .bubble{ color:#999; }
+
+  #oxForm{ display:flex; gap:8px; padding:10px; border-top:1px solid #eee; background:#fff; }
+  #oxInput{ flex:1; border:1px solid #ddd; border-radius:22px; padding:9px 14px; font-size:.92rem; outline:none; }
+  #oxInput:focus{ border-color:#3b1c6e; }
+  #oxSend{ border:none; background:#3b1c6e; color:#fff; width:42px; height:42px; border-radius:50%; cursor:pointer; flex-shrink:0; }
+  #oxSend:disabled{ opacity:.5; cursor:default; }
+
+  /* มือถือ: แชตเด้งจากขอบล่าง เต็มความกว้าง ไม่เหลือช่องโหว่ให้เห็นหน้าเว็บข้างหลัง */
+  @media (max-width:480px){
+    #oxPanel{ left:0; right:0; bottom:0; top:auto; width:100%; max-width:100%;
+              height:85vh; max-height:85vh; border-radius:18px 18px 0 0; }
+  }
+</style>
+
+<button id="oxBubble" aria-label="แชตกับผู้ช่วย AI">
+  {# เปลี่ยนรูปบอตได้ที่ไฟล์ static/img/ai-bot.png #}
+  <img class="ox-bubble-img" src="{% static 'img/ai-bot.png' %}" alt="ผู้ช่วย AI">
+  <span class="ox-badge"></span>
+</button>
+
+<div id="oxPanel" role="dialog" aria-label="ผู้ช่วยขาย Oxlet">
+  <div class="ox-head">
+    <div class="ox-ava"><img src="{% static 'img/ai-bot.png' %}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>
+    <div><strong>น้องอ๊อกเล็ต</strong><br><small>ผู้ช่วยหารถ · ตอบจากสต็อกจริง</small></div>
+    <button id="oxClose" aria-label="ปิด">&times;</button>
+  </div>
+  <div id="oxMsgs"></div>
+  <form id="oxForm">
+    <input id="oxInput" type="text" maxlength="500" autocomplete="off" placeholder="พิมพ์รุ่นรถ/งบที่สนใจ…">
+    <button id="oxSend" type="submit" aria-label="ส่ง"><i class="bi bi-send-fill"></i></button>
+  </form>
+</div>
+
+<script>
+(function(){
+  var CHAT_URL = "{% url 'chat' %}";
+  var CSRF = "{{ csrf_token }}";
+  var bubble = document.getElementById('oxBubble');
+  var panel  = document.getElementById('oxPanel');
+  var msgs   = document.getElementById('oxMsgs');
+  var form   = document.getElementById('oxForm');
+  var input  = document.getElementById('oxInput');
+  var sendBtn= document.getElementById('oxSend');
+  var history = [];
+  var greeted = false;
+
+  /* ---- ลากปุ่มวงกลม (เมาส์ + นิ้ว) ---- */
+  var drag = false, moved = false, sx=0, sy=0, ox=0, oy=0;
+  try {
+    var saved = JSON.parse(localStorage.getItem('oxBubblePos') || 'null');
+    if (saved) { bubble.style.left = saved.x+'px'; bubble.style.top = saved.y+'px'; bubble.style.right='auto'; bubble.style.bottom='auto'; }
+  } catch(e){}
+
+  function clamp(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
+
+  bubble.addEventListener('pointerdown', function(e){
+    e.preventDefault();                 // กันไม่ให้นิ้วไปเลื่อนหน้าเว็บแทน
+    drag = true; moved = false;
+    var r = bubble.getBoundingClientRect();
+    sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+    try { bubble.setPointerCapture(e.pointerId); } catch(err){}
+  });
+  bubble.addEventListener('pointermove', function(e){
+    if(!drag) return;
+    e.preventDefault();
+    var dx = e.clientX - sx, dy = e.clientY - sy;
+    if(Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+    bubble.style.left = clamp(ox + dx, 6, window.innerWidth  - 68) + 'px';
+    bubble.style.top  = clamp(oy + dy, 6, window.innerHeight - 68) + 'px';
+    bubble.style.right = 'auto'; bubble.style.bottom = 'auto';
+  });
+  function endDrag(e){
+    if(!drag) return;
+    drag = false;
+    try { bubble.releasePointerCapture(e.pointerId); } catch(err){}
+    if(moved){
+      var r = bubble.getBoundingClientRect();
+      try { localStorage.setItem('oxBubblePos', JSON.stringify({x:r.left, y:r.top})); } catch(err){}
+    } else {
+      togglePanel();   // กดเฉยๆ (ไม่ลาก) = เปิด/ปิดแชต
+    }
+  }
+  bubble.addEventListener('pointerup', endDrag);
+  bubble.addEventListener('pointercancel', endDrag);
+
+  document.getElementById('oxClose').addEventListener('click', function(){ panel.classList.remove('open'); });
+
+  function togglePanel(){
+    panel.classList.toggle('open');
+    if(panel.classList.contains('open')){
+      if(!greeted){ addMsg('bot', 'สวัสดีค่ะ 🙏 น้องอ๊อกเล็ตยินดีช่วยหารถค่ะ\nลองพิมพ์ยี่ห้อ/รุ่น หรืองบที่สนใจได้เลย เช่น "Honda Civic งบผ่อนเดือนละ 8,000"'); greeted = true; }
+      setTimeout(function(){ input.focus(); }, 100);
+    }
+  }
+
+  /* ---- แสดงข้อความ ---- */
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function linkify(s){ return s.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>'); }
+  function addMsg(role, text){
+    var d = document.createElement('div');
+    d.className = 'ox-msg ' + role;
+    d.innerHTML = '<div class="bubble">' + linkify(esc(text)) + '</div>';
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+    return d;
+  }
+
+  /* ---- ส่งคำถาม ---- */
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var text = input.value.trim();
+    if(!text) return;
+    addMsg('user', text);
+    history.push({role:'user', text:text});
+    input.value = '';
+    sendBtn.disabled = true;
+
+    var typing = addMsg('bot', '...'); typing.classList.add('ox-typing');
+
+    fetch(CHAT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({message:text, history:history.slice(-8)})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      typing.remove();
+      var reply = (data && data.reply) || 'ขออภัยค่ะ ลองใหม่อีกครั้งนะคะ';
+      addMsg('bot', reply);
+      history.push({role:'bot', text:reply});
+    })
+    .catch(function(){
+      typing.remove();
+      addMsg('bot', 'ขออภัยค่ะ เชื่อมต่อไม่ได้ 🙏 ทักไลน์ @oxletauto ได้เลยนะคะ');
+    })
+    .finally(function(){ sendBtn.disabled = false; input.focus(); });
+  });
+})();
+</script>

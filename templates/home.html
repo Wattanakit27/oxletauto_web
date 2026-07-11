@@ -1,0 +1,745 @@
+{% extends "base.html" %}
+{% load humanize static %}
+
+{% block head %}
+<style>
+  /* ===== helpers ===== */
+  .section{padding:70px 0}
+  .section-sm{padding:50px 0}
+  .eyebrow{color:var(--ox);font-weight:700;letter-spacing:.14em;font-size:.8rem;text-transform:uppercase}
+  .sec-title{font-size:2rem;font-weight:800;color:var(--ink);line-height:1.2}
+  .sec-title .u{color:var(--ox)}
+  .divider{width:64px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--ox),var(--gold));margin:14px 0 6px}
+  .btn-ghost{border:1.5px solid rgba(255,255,255,.6);color:#fff;font-weight:600}
+  .btn-ghost:hover{background:#fff;color:var(--ox)}
+
+  /* ===== photo marquee (ภาพจากร้าน & ลูกค้ารับรถ) ===== */
+  .photo-marquee{overflow:hidden;width:100%;position:relative;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);
+            mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+  .photo-track{display:flex;gap:.6rem;width:max-content;animation:scrollx 180s linear infinite}
+  .photo-track img{height:260px;width:390px;object-fit:cover;border-radius:10px}
+  .photo-marquee:hover .photo-track{animation-play-state:paused}
+  @keyframes scrollx{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* ===== hero ===== */
+  .hero{position:relative;color:#fff;padding:78px 0 52px;background-color:var(--ox-dark);
+    background-image:linear-gradient(100deg,rgba(37,13,80,.92) 0%,rgba(60,24,120,.50) 44%,rgba(46,16,101,.06) 100%),url('{% static 'img/hero-bg.jpg' %}');
+    background-size:cover;background-position:center;}
+  .hero-inner{position:relative;z-index:3}
+  .hero-search{background:rgba(255,255,255,.97);border-radius:16px;box-shadow:0 20px 46px rgba(30,10,70,.30);padding:14px 16px}
+  .hero-search label{font-size:.72rem;color:var(--muted);font-weight:600;margin-bottom:3px;display:block}
+  .hero-search .form-select,.hero-search .form-control{border-radius:10px;border:1.5px solid #e4ddf3;font-size:.9rem;padding:.5rem .7rem}
+  .hero-search .form-select:focus,.hero-search .form-control:focus{border-color:var(--ox);box-shadow:0 0 0 .18rem rgba(109,40,217,.15)}
+  .hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:70px;
+    background:linear-gradient(to top,#fff,transparent)}
+  .hero .badge-first{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:7px 16px;font-size:.82rem;font-weight:600}
+  .hero h1{font-size:2.9rem;font-weight:800;line-height:1.14;text-shadow:0 4px 24px rgba(0,0,0,.25)}
+  .hero .lead{color:#e9defc;font-size:1.04rem}
+  .hero .stat-num{font-family:'Prompt';font-weight:800;font-size:1.7rem;line-height:1}
+  .hero .stat-lbl{font-size:.78rem;color:#d9c9f5}
+  .search-card{background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(30,10,70,.35);padding:22px}
+  .search-card h6{color:var(--ox);font-weight:700}
+  .search-card .form-select,.search-card .form-control{border-radius:10px;border:1.5px solid #e4ddf3;font-size:.92rem;padding:.55rem .8rem}
+  .search-card .form-select:focus,.search-card .form-control:focus{border-color:var(--ox);box-shadow:0 0 0 .18rem rgba(109,40,217,.15)}
+  .chip{display:inline-block;font-size:.78rem;background:var(--ox-light);color:var(--ox);border-radius:999px;padding:4px 12px;margin:3px 3px 0 0;font-weight:600}
+
+  /* ===== trust ===== */
+  .trust{margin-top:22px;position:relative;z-index:5}
+  .trust .card{border:none;border-radius:16px;box-shadow:0 12px 34px rgba(60,30,120,.10);padding:18px}
+  .trust .t-item{display:flex;gap:14px;align-items:center;padding:10px 6px}
+  .trust .t-ico{flex:0 0 46px;height:46px;border-radius:12px;display:grid;place-items:center;
+    background:var(--ox-light);color:var(--ox);font-size:1.35rem}
+  .trust .t-item strong{display:block;font-size:.96rem}
+  .trust .t-item span{font-size:.78rem;color:var(--muted)}
+
+  /* ===== category ===== */
+  .cat{position:relative;display:flex;flex-direction:column;justify-content:space-between;
+    border-radius:18px;overflow:hidden;height:150px;padding:18px;color:#fff;
+    background:linear-gradient(150deg,var(--ox-2),var(--ox-dark));box-shadow:0 10px 28px rgba(60,30,120,.14);transition:.2s}
+  .cat:hover{transform:translateY(-5px);color:#fff}
+  .cat .cat-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;transition:.45s}
+  .cat:hover .cat-bg{transform:scale(1.07)}
+  .cat .cat-ov{position:absolute;inset:0;z-index:1;background:linear-gradient(150deg,rgba(76,29,149,.68),rgba(46,16,101,.92))}
+  .cat>.cat-ic,.cat>div{position:relative;z-index:2}
+  .cat .cat-ic{font-size:2rem;opacity:.92}
+  .cat b{font-family:'Prompt';font-size:1.12rem;display:block}
+  .cat span{font-size:.78rem;color:#e3d6fb}
+
+  /* ===== brands ===== */
+  .brand-strip{background:var(--ox-light);border-radius:18px;padding:24px}
+  .brand-strip img{height:40px;object-fit:contain;filter:grayscale(1);opacity:.65;transition:.25s}
+  .brand-strip .col:hover img{filter:none;opacity:1;transform:scale(1.08)}
+
+  /* ===== car card (home) ===== */
+  .car-card{border:none;border-radius:16px;overflow:hidden;background:#fff;
+    box-shadow:0 8px 26px rgba(60,30,120,.09);transition:.2s;height:100%}
+  .car-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(60,30,120,.18)}
+  .car-card .ph{position:relative;height:186px;overflow:hidden}
+  .car-card .ph img{width:100%;height:100%;object-fit:cover;transition:.4s}
+  .car-card:hover .ph img{transform:scale(1.07)}
+  .car-card .tag{position:absolute;top:12px;left:12px;background:var(--ox);color:#fff;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:8px}
+  .car-card .tag.hot{background:var(--gold);color:#3a2600}
+  .car-card .fav{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);color:var(--ox);display:grid;place-items:center;border:none}
+  .car-card .title{font-family:'Prompt';font-weight:600;font-size:1rem;color:var(--ink);line-height:1.3;min-height:2.6em}
+  .car-card .spec{font-size:.78rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px;margin:8px 0}
+  .car-card .spec i{color:var(--ox)}
+  .car-card .price{font-family:'Prompt';font-weight:800;color:var(--ox);font-size:1.3rem}
+  .car-card .install{font-size:.8rem;color:var(--gold);font-weight:600}
+  .car-card .btn-view{background:var(--ox-light);color:var(--ox);font-weight:600;border-radius:10px;transition:.18s}
+  .car-card:hover .btn-view{background:var(--ox);color:#fff}
+
+  /* ===== stats band ===== */
+  .stats-band{background:linear-gradient(120deg,var(--ox-dark),var(--ox-deep) 60%,var(--ox));color:#fff;border-radius:26px;position:relative;overflow:hidden}
+  .stats-band::before{content:"";position:absolute;right:-70px;top:-70px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.06)}
+  .stat-cell{text-align:center;padding:22px 10px;position:relative;z-index:2}
+  .stat-cell .num{font-family:'Prompt';font-weight:800;font-size:2.5rem;line-height:1;color:#fff}
+  .stat-cell .num .suffix{color:var(--gold)}
+  .stat-cell .lbl{font-size:.88rem;color:#d6c6f2;margin-top:6px}
+  .stat-cell .ic{font-size:1.4rem;color:#e9d5ff;margin-bottom:6px;display:block}
+  .stat-sep{border-right:1px solid rgba(255,255,255,.14)}
+  @media(max-width:767px){.stat-sep{border-right:none;border-bottom:1px solid rgba(255,255,255,.12)}}
+
+  /* ===== why ===== */
+  .why{background:linear-gradient(160deg,var(--ox-dark),var(--ox-deep));color:#fff;border-radius:26px;overflow:hidden}
+  .why .w-item{display:flex;gap:16px;padding:16px}
+  .why .w-ico{flex:0 0 52px;height:52px;border-radius:14px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:1.5rem;color:#e9d5ff}
+  .why .w-item strong{font-family:'Prompt';font-size:1.05rem;display:block;margin-bottom:2px}
+  .why .w-item p{font-size:.86rem;color:#d6c6f2;margin:0}
+  .why-photo{height:100%;min-height:420px;display:grid;place-items:center;
+    background:linear-gradient(160deg,var(--ox),var(--ox-dark))}
+  .why-photo img{width:60%;max-width:220px;opacity:.95}
+
+  /* ===== services ===== */
+  .svc{border:1px solid #eee6fb;border-radius:18px;padding:26px 22px;height:100%;transition:.2s;background:#fff}
+  .svc:hover{border-color:var(--ox);transform:translateY(-5px);box-shadow:0 16px 36px rgba(60,30,120,.14)}
+  .svc .s-ico{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;font-size:1.7rem;
+    background:linear-gradient(135deg,var(--ox),var(--ox-2));color:#fff;margin-bottom:16px}
+  .svc h5{font-size:1.1rem}
+  .svc ul{padding-left:1.1rem;margin:0;color:var(--muted);font-size:.88rem}
+  .svc li{margin-bottom:4px}
+
+  /* ===== finance partners ===== */
+  .fin-card{background:#fff;border:1px solid #eee6fb;border-radius:14px;padding:16px 10px;height:100%;text-align:center;transition:.18s}
+  .fin-card:hover{border-color:var(--ox);transform:translateY(-4px);box-shadow:0 12px 28px rgba(60,30,120,.12)}
+  .fin-card .fin-ic{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;margin:0 auto 8px;
+    background:var(--ox-light);color:var(--ox);font-size:1.25rem}
+  .fin-card .fin-code{font-family:'Prompt';font-weight:800;font-size:1rem;color:var(--ink);letter-spacing:.4px}
+  .fin-card .fin-name{font-size:.8rem;color:var(--muted);margin-top:1px}
+  .fin-card .fin-note{font-size:.72rem;color:#9a86c4;margin-top:5px;line-height:1.3}
+  .fin-card{display:flex;flex-direction:column;justify-content:center}
+  .fin-card .fin-logo{max-height:40px;max-width:74%;width:auto;height:auto;object-fit:contain;display:block;margin:4px auto 12px}
+  .fin-card .fin-logo.big{max-height:54px;max-width:60%}
+  .fin-card .fin-logo.small{max-height:30px;max-width:76%}
+
+  /* ===== promo ===== */
+  .promo{background:linear-gradient(120deg,var(--ox),var(--ox-2));border-radius:24px;color:#fff;overflow:hidden;position:relative}
+  .promo::before{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .promo::after{content:"";position:absolute;left:-40px;bottom:-80px;width:220px;height:220px;border-radius:50%;background:rgba(245,166,35,.18)}
+  .promo .big{font-family:'Prompt';font-weight:800;font-size:2.2rem;line-height:1.05}
+
+  /* ===== reviews ===== */
+  .rev-card{background:#fff;border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(60,30,120,.08);height:100%}
+  .rev-card .stars{color:var(--gold)}
+  .rev-card .who{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .rev-card .who .av{width:42px;height:42px;border-radius:50%;background:var(--ox-light);color:var(--ox);
+    display:grid;place-items:center;font-weight:700;font-family:'Prompt';overflow:hidden}
+  .rev-card .who .av img{width:100%;height:100%;object-fit:cover}
+  .rev-card .quote{font-size:.92rem;color:#4a4160;line-height:1.55}
+
+  /* ===== branches ===== */
+  .branch{border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(60,30,120,.10);background:#fff;height:100%}
+  .branch .b-ph{height:170px;object-fit:cover;width:100%}
+  .branch .b-ph-ph{height:170px;display:grid;place-items:center;color:#fff;font-size:2.4rem;
+    background:linear-gradient(150deg,var(--ox-2),var(--ox-dark))}
+  .branch .b-body{padding:18px}
+  .branch .b-body h5{font-size:1.05rem}
+
+  /* ===== cta band ===== */
+  .cta-band{background:linear-gradient(120deg,var(--ox-dark),var(--ox-2));color:#fff;border-radius:26px;padding:50px 40px}
+
+  /* ===== owner ===== */
+  .owner-photo{position:relative;border-radius:22px;overflow:hidden;box-shadow:0 20px 50px rgba(60,30,120,.22);min-height:480px;
+    background:linear-gradient(160deg,var(--ox),var(--ox-dark));color:#fff}
+  .owner-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%}
+  .owner-badge{position:absolute;left:18px;bottom:18px;z-index:3;background:rgba(255,255,255,.96);color:var(--ox);
+    border-radius:14px;padding:10px 16px;box-shadow:0 10px 26px rgba(0,0,0,.22)}
+  .owner-badge b{font-family:'Prompt';display:block;font-size:1.02rem;line-height:1.1}
+  .owner-badge span{font-size:.78rem;color:var(--muted)}
+  .owner-quote{font-family:'Prompt';font-weight:500;font-size:1.35rem;line-height:1.5;color:var(--ink)}
+  .owner-quote .mark{color:var(--ox);font-size:2.4rem;font-weight:800;line-height:0;vertical-align:-.35em;margin-right:4px}
+  .team-role{display:flex;gap:12px;align-items:flex-start;background:var(--ox-light);border-radius:14px;padding:14px;height:100%}
+  .team-role i{font-size:1.4rem;color:var(--ox);flex:0 0 auto;margin-top:2px}
+  .team-role b{font-family:'Prompt';font-size:.95rem;display:block;line-height:1.2}
+  .team-role span{font-size:.78rem;color:var(--muted)}
+
+  @media(max-width:991px){
+    .hero{padding:64px 0 108px}
+    .hero h1{font-size:2.1rem}
+    .why-photo{min-height:240px}
+    .owner-photo{min-height:300px}
+    .owner-quote{font-size:1.12rem}
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="row">
+        <div class="col-lg-7">
+          <span class="badge-first mb-3"><i class="bi bi-patch-check-fill text-gold"></i> โชว์รูมรถมือสองพร้อมศูนย์บริการ · เจ้าแรกของไทย</span>
+          <h1 class="mb-3">รถมือสอง<span class="text-gold">คุณภาพมาตรฐาน</span><br>พร้อมศูนย์บริการครบวงจร</h1>
+          <p class="lead mb-4">คัดทุกคัน ตรวจสภาพเต็มระบบ · รับประกันเครื่อง+เกียร์ 1 ปี<br>ดอกเบี้ยเริ่มต้น 2.79% จัดไฟแนนซ์ได้ทุกธนาคาร · ส่งรถถึงบ้านทั่วไทย</p>
+          <div class="d-flex gap-2 flex-wrap mb-4">
+            <a href="{% url 'all_cars' %}" class="btn btn-gold btn-lg px-4"><i class="bi bi-search me-1"></i> ดูรถทั้งหมด</a>
+            <a href="https://line.me/R/oaMessage/{{ SITE_LINE|urlencode }}/?{{ 'สนใจออกรถครับ/ค่ะ รบกวนขอรายละเอียด 🙏'|urlencode }}" class="btn btn-ghost btn-lg px-4"><i class="bi bi-chat-dots me-1"></i> ปรึกษาฟรีทาง LINE</a>
+          </div>
+          <div class="row g-3" style="max-width:520px">
+            <div class="col-4"><div class="stat-num text-gold">{{ total_cars }}+</div><div class="stat-lbl">รถพร้อมส่งมอบ</div></div>
+            <div class="col-4"><div class="stat-num text-gold">2.79%</div><div class="stat-lbl">ดอกเบี้ยเริ่มต้น</div></div>
+            <div class="col-4"><div class="stat-num text-gold">{{ branches|length }} สาขา</div><div class="stat-lbl">พร้อมศูนย์บริการ</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- แถบค้นหาแนวนอน (ล่างสุดของ hero) -->
+      <div class="hero-search mt-4 mt-lg-5">
+        <form action="{% url 'all_cars' %}" method="get">
+          <div class="row g-2 align-items-end">
+            <div class="col-6 col-lg">
+              <label>ยี่ห้อ</label>
+              <select name="brand" class="form-select">
+                <option value="">ทุกยี่ห้อ</option>
+                {% for b in brands %}<option value="{{ b.slug }}">{{ b.name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-lg">
+              <label>ประเภท</label>
+              <select name="type" class="form-select">
+                <option value="">ทุกประเภท</option>
+                {% for t in car_types %}<option value="{{ t.slug }}">{{ t.name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-lg">
+              <label>ช่วงราคา</label>
+              <select name="price" class="form-select">
+                <option value="">ทุกช่วงราคา</option>
+                {% for key,label,lo,hi in price_ranges %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-lg">
+              <label>เกียร์</label>
+              <select name="transmission" class="form-select">
+                <option value="">ทั้งหมด</option>
+                {% for val,label in transmissions %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-lg-3">
+              <label>ค้นหารุ่น</label>
+              <input name="q" class="form-control" placeholder="เช่น Civic, CR-V, Everest...">
+            </div>
+            <div class="col-12 col-lg-auto d-grid">
+              <button class="btn btn-ox px-4 py-2"><i class="bi bi-search me-1"></i> ค้นหา {{ total_cars }} คัน</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== YOUTUBE (ต่อจากค้นหา) ===================== -->
+{% if featured_yt %}
+<section class="section-sm">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+      <div>
+        <div class="eyebrow">วิดีโอจากช่องของเรา</div>
+        <h2 class="sec-title mt-1">คลิป<span class="u">แนะนำ</span></h2>
+        <div class="divider"></div>
+      </div>
+      <a href="{% url 'about' %}" class="btn btn-outline-ox px-4">ดูคลิปทั้งหมด <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+    <div class="row g-4">
+      {% for v in featured_yt|slice:":3" %}
+      <div class="col-md-4">
+        <div class="vid-card" role="button" onclick="playVideo('{{ v.embed_url }}','{{ v.source }}')">
+          <div class="vid-thumb">
+            <img src="{{ v.thumbnail }}" loading="lazy" alt="{{ v.title }}">
+            <span class="vid-play"><i class="bi bi-play-circle-fill"></i></span>
+            <span class="badge bg-danger position-absolute bottom-0 end-0 m-2"><i class="bi bi-youtube me-1"></i> ดูใน YouTube</span>
+          </div>
+          <div class="fw-semibold mt-2 text-truncate-2">{{ v.title }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ===================== PHOTO STRIP (ภาพจากร้าน & ลูกค้ารับรถ) ===================== -->
+{% if branch_photos %}
+<section class="section-sm">
+  <div class="container">
+    <div class="mb-4">
+      <div class="eyebrow">บรรยากาศจริง</div>
+      <h2 class="sec-title mt-1">ภาพจาก<span class="u">ร้าน &amp; ลูกค้ารับรถ</span></h2>
+      <div class="divider"></div>
+    </div>
+  </div>
+  <div class="photo-marquee">
+    <div class="photo-track">
+      {% for p in branch_photos %}<a href="{{ p.image.url }}" target="_blank"><img src="{{ p.image.url }}" loading="lazy" alt="ภาพจากร้าน"></a>{% endfor %}
+      {% for p in branch_photos %}<a href="{{ p.image.url }}" target="_blank" aria-hidden="true" tabindex="-1"><img src="{{ p.image.url }}" loading="lazy" alt=""></a>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ===================== TRUST STRIP ===================== -->
+<section class="trust">
+  <div class="container">
+    <div class="card">
+      <div class="row g-2">
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-shield-check"></i></div><div><strong>รับประกัน 1 ปี</strong><span>เครื่องยนต์ + เกียร์</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-percent"></i></div><div><strong>ดอกเบี้ย 2.79%</strong><span>จัดได้ทุกธนาคาร</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-tools"></i></div><div><strong>ศูนย์บริการในตัว</strong><span>ดูแลหลังการขาย</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-droplet-half"></i></div><div><strong>Car Spa ฟรี</strong><span>ส่งมอบรถสวยพร้อมขับ</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-truck"></i></div><div><strong>ส่งถึงบ้าน</strong><span>ทั่วประเทศ</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-headset"></i></div><div><strong>ช่วยเหลือ 24 ชม.</strong><span>อุ่นใจตลอดการใช้งาน</span></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CATEGORY + BRANDS ===================== -->
+{% if car_types or brands %}
+<section class="section" id="category">
+  <div class="container">
+    {% if car_types %}
+    <div class="text-center mb-5">
+      <div class="eyebrow">เลือกตามสไตล์คุณ</div>
+      <h2 class="sec-title mt-1">เลือกซื้อ<span class="u">ตามประเภทรถ</span></h2>
+      <div class="divider mx-auto"></div>
+    </div>
+    <div class="row g-3">
+      {% for c in categories %}
+      <div class="col-6 col-lg-3">
+        <a href="{% url 'all_cars' %}?type={{ c.type.slug }}" class="cat">
+          {% if c.car and c.car.cover_image %}
+          <img class="cat-bg" src="{{ c.car.cover_image.url }}" alt="{{ c.type.name }}" loading="lazy">
+          <div class="cat-ov"></div>
+          {% endif %}
+          <span class="cat-ic"><i class="bi {% cycle 'bi-car-front-fill' 'bi-truck-front-fill' 'bi-ev-front-fill' 'bi-gem' %}"></i></span>
+          <div><b>{{ c.type.name }}</b><span>ดูรถ {{ c.type.name }}ทั้งหมด →</span></div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if brands %}
+    <div class="brand-strip mt-4">
+      <div class="row row-cols-3 row-cols-md-5 g-4 align-items-center text-center">
+        {% for b in brands %}
+        <div class="col">
+          <a href="{% url 'all_cars' %}?brand={{ b.slug }}" title="{{ b.name }}">
+            {% if b.logo %}<img src="{{ b.logo.url }}" alt="{{ b.name }}">
+            {% else %}<span class="fw-semibold text-ox">{{ b.name }}</span>{% endif %}
+          </a>
+        </div>
+        {% endfor %}
+        <div class="col d-grid"><a href="{% url 'all_cars' %}" class="btn btn-outline-ox btn-sm align-self-center">ดูทุกยี่ห้อ →</a></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ===================== FEATURED CARS ===================== -->
+<section class="section-sm bg-ox-light" id="cars">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+      <div>
+        <div class="eyebrow">คัดมาให้แล้ว</div>
+        <h2 class="sec-title mt-1">รถแนะนำ<span class="u">ประจำสัปดาห์</span></h2>
+        <div class="divider"></div>
+      </div>
+      <a href="{% url 'all_cars' %}" class="btn btn-ox px-4">ดูรถทั้งหมด {{ total_cars }} คัน <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+
+    {% if featured %}
+    <div class="row g-4">
+      {% for car in featured %}
+      <div class="col-6 col-lg-3">
+        <div class="car-card">
+          <div class="ph">
+            {% if car.status == 'reserved' %}<span class="tag">จองแล้ว</span>
+            {% elif car.is_featured %}<span class="tag hot"><i class="bi bi-fire"></i> แนะนำ</span>{% endif %}
+            <a class="fav" href="{% url 'compare' %}?car={{ car.slug }}" title="เปรียบเทียบ"><i class="bi bi-bar-chart-steps"></i></a>
+            <a href="{{ car.get_absolute_url }}">
+              {% if car.cover_image %}<img src="{{ car.cover_image.url }}" alt="{{ car.title }}">
+              {% else %}<img src="{% static 'img/oxlet-logo.png' %}" alt="{{ car.title }}" style="object-fit:contain;background:#efeaf5;padding:2rem">{% endif %}
+            </a>
+          </div>
+          <div class="p-3">
+            <a href="{{ car.get_absolute_url }}" class="text-decoration-none"><div class="title">{{ car.title }}</div></a>
+            <div class="spec">
+              <span><i class="bi bi-calendar3"></i> {{ car.year }}</span>
+              <span><i class="bi bi-speedometer2"></i> {{ car.mileage|intcomma }} กม.</span>
+              <span><i class="bi bi-fuel-pump"></i> {{ car.get_fuel_display }}</span>
+            </div>
+            <div class="price">{{ car.price|intcomma }} ฿</div>
+            {% if car.installment_min %}<div class="install mb-2">ผ่อนเริ่ม {{ car.installment_min|intcomma }} บาท/เดือน</div>{% else %}<div class="install mb-2">&nbsp;</div>{% endif %}
+            <a href="{{ car.get_absolute_url }}" class="btn btn-view w-100 btn-sm py-2">ดูรายละเอียด</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">ยังไม่มีรถในระบบ — รัน <code>python manage.py seed_demo</code> เพื่อใส่ข้อมูลตัวอย่าง</p>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ===================== STATS BAND ===================== -->
+<section class="section-sm">
+  <div class="container">
+    <div class="stats-band p-4 p-lg-5">
+      <div class="text-center mb-2 position-relative" style="z-index:2">
+        <div class="eyebrow" style="color:#e9d5ff">ตัวเลขที่การันตีความไว้ใจ</div>
+        <h2 class="mt-1 text-white" style="font-size:1.8rem">ทำไมลูกค้าถึงเลือก <span class="text-gold">{{ SITE_NAME }}</span></h2>
+      </div>
+      <div class="row align-items-center mt-2">
+        <div class="col-6 col-md-4 col-lg stat-sep">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-award-fill"></i></span>
+            <div class="num"><span class="counter" data-target="12">0</span><span class="suffix">+</span></div>
+            <div class="lbl">ปีแห่งประสบการณ์</div></div>
+        </div>
+        <div class="col-6 col-md-4 col-lg stat-sep">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-car-front-fill"></i></span>
+            <div class="num"><span class="counter" data-target="3500">0</span><span class="suffix">+</span></div>
+            <div class="lbl">คันที่ส่งมอบแล้ว</div></div>
+        </div>
+        <div class="col-6 col-md-4 col-lg stat-sep">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-clipboard2-check-fill"></i></span>
+            <div class="num"><span class="counter" data-target="{{ total_cars }}">0</span><span class="suffix">+</span></div>
+            <div class="lbl">รถพร้อมส่งในสต็อก</div></div>
+        </div>
+        <div class="col-6 col-md-4 col-lg stat-sep">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-star-fill"></i></span>
+            <div class="num"><span class="counter" data-target="4.9" data-decimals="1">0</span></div>
+            <div class="lbl">คะแนนรีวิว Google</div></div>
+        </div>
+        <div class="col-6 col-md-4 col-lg stat-sep">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-geo-alt-fill"></i></span>
+            <div class="num"><span class="counter" data-target="{{ branches|length }}">0</span></div>
+            <div class="lbl">สาขาพร้อมศูนย์บริการ</div></div>
+        </div>
+        <div class="col-6 col-md-4 col-lg">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-eye-fill"></i></span>
+            <div class="num"><span class="counter" data-target="{{ visitor_count }}">0</span></div>
+            <div class="lbl">ยอดผู้เข้าชมเว็บ</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WHY OXLET ===================== -->
+<section class="section" id="why">
+  <div class="container">
+    <div class="why">
+      <div class="row g-0">
+        <div class="col-lg-5 d-none d-lg-block">
+          <div class="why-photo"><img src="{% static 'img/oxlet-logo-white.png' %}" alt="{{ SITE_NAME }}"></div>
+        </div>
+        <div class="col-lg-7 p-4 p-lg-5">
+          <div class="eyebrow" style="color:#e9d5ff">ทำไมต้อง {{ SITE_NAME }}</div>
+          <h2 class="mt-1 mb-2 text-white" style="font-size:1.9rem">โชว์รูมรถมือสอง<span class="text-gold"> พร้อมศูนย์บริการ เจ้าแรกของไทย</span></h2>
+          <p style="color:#d6c6f2" class="mb-4">เราไม่ใช่แค่เต็นท์รถ แต่เป็นโชว์รูมมาตรฐานที่มีศูนย์ซ่อมบำรุงในตัว ดูแลคุณตั้งแต่วันเลือกซื้อจนตลอดการใช้งาน</p>
+          <div class="row">
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-patch-check"></i></div><div><strong>คัด &amp; ตรวจทุกคัน</strong><p>ตรวจสภาพเต็มระบบก่อนขึ้นโชว์ รถตรงปก ไม่มีประวัติซ่อนเร้น</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-shield-check"></i></div><div><strong>รับประกัน 1 ปี</strong><p>รับประกันเครื่องยนต์และเกียร์ พร้อมบริการหลังการขาย</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-tools"></i></div><div><strong>ศูนย์บริการในตัว</strong><p>เปลี่ยนถ่ายน้ำมัน แบตเตอรี่ ไส้กรอง ครบจบในที่เดียว</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-bank"></i></div><div><strong>ไฟแนนซ์ทุกธนาคาร</strong><p>ดอกเบี้ยเริ่ม 2.79% ฟรีดาวน์ อนุมัติไว จัดเต็มวงเงิน</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-truck"></i></div><div><strong>ส่งถึงบ้านทั่วไทย</strong><p>เลือกรถออนไลน์ ส่งมอบถึงหน้าบ้านคุณทุกจังหวัด</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-headset"></i></div><div><strong>ทีมช่วยเหลือ 24 ชม.</strong><p>มีปัญหาเมื่อไหร่ โทรหาเราได้ตลอด อุ่นใจทุกการเดินทาง</p></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== OWNER / FOUNDER ===================== -->
+<section class="section" id="owner">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5">
+        <div class="owner-photo">
+          <img src="{% static 'img/owner.jpg' %}" alt="ผู้ก่อตั้ง {{ SITE_NAME }}">
+          <div class="owner-badge"><b>ผู้ก่อตั้ง</b><span>กรรมการผู้จัดการ · {{ SITE_NAME }}</span></div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="eyebrow">รู้จักผู้ก่อตั้ง</div>
+        <h2 class="sec-title mt-1">เบื้องหลัง <span class="u">{{ SITE_NAME }}</span></h2>
+        <div class="divider"></div>
+        <p class="owner-quote mt-3 mb-4"><span class="mark">“</span>อยากให้คนไทยซื้อรถมือสองได้อย่างสบายใจเหมือนออกรถป้ายแดง — รถทุกคันต้องตรวจจริง รับประกันจริง และมีศูนย์บริการดูแลกันยาวๆ ไม่ใช่ขายแล้วจบ<span class="mark">”</span></p>
+        <p class="text-muted mb-4">จากความตั้งใจนี้ {{ SITE_NAME }} จึงเป็นโชว์รูมรถมือสองที่มี “ศูนย์บริการในตัว” ดูแลลูกค้าตั้งแต่วันเลือกซื้อจนตลอดการใช้งาน ด้วยทีมงานมืออาชีพในทุกสาขา</p>
+        <div class="row g-3">
+          <div class="col-sm-4"><div class="team-role"><i class="bi bi-person-badge"></i><div><b>ทีมที่ปรึกษาการขาย</b><span>แนะนำรถตรงงบ ไม่กดดัน</span></div></div></div>
+          <div class="col-sm-4"><div class="team-role"><i class="bi bi-wrench-adjustable"></i><div><b>ช่างศูนย์บริการ</b><span>ตรวจ–ซ่อม–ดูแลหลังการขาย</span></div></div></div>
+          <div class="col-sm-4"><div class="team-role"><i class="bi bi-cash-coin"></i><div><b>ทีมไฟแนนซ์</b><span>จัดสินเชื่อทุกธนาคาร</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SERVICES ===================== -->
+<section class="section-sm" id="services">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="eyebrow">ครบจบในที่เดียว</div>
+      <h2 class="sec-title mt-1">บริการ<span class="u">ของเรา</span></h2>
+      <div class="divider mx-auto"></div>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="svc text-center">
+          <div class="s-ico mx-auto"><i class="bi bi-car-front-fill"></i></div>
+          <h5>ขายรถมือสอง</h5>
+          <ul class="text-start mt-2"><li>รถคัดคุณภาพ {{ total_cars }}+ คัน</li><li>ตรวจสภาพเต็มระบบ</li><li>รับประกันเครื่อง+เกียร์</li></ul>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="svc text-center">
+          <div class="s-ico mx-auto"><i class="bi bi-arrow-left-right"></i></div>
+          <h5>รับซื้อ – เทิร์นรถ</h5>
+          <ul class="text-start mt-2"><li>ประเมินราคาให้สูง</li><li>รับเงินไว ปิดไฟแนนซ์ให้</li><li>เทิร์นรถเก่าแลกคันใหม่</li></ul>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="svc text-center">
+          <div class="s-ico mx-auto"><i class="bi bi-cash-coin"></i></div>
+          <h5>จัดไฟแนนซ์</h5>
+          <ul class="text-start mt-2"><li>ดอกเบี้ยเริ่ม 2.79%</li><li>ทุกธนาคาร ฟรีดาวน์</li><li>อนุมัติไว รู้ผลใน 1 วัน</li></ul>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="svc text-center">
+          <div class="s-ico mx-auto"><i class="bi bi-wrench-adjustable-circle"></i></div>
+          <h5>บริการหลังการขาย</h5>
+          <ul class="text-start mt-2"><li>ศูนย์บริการในตัว</li><li>Car Spa ฟรี</li><li>ช่วยเหลือ 24 ชม.</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINANCE PARTNERS ===================== -->
+<section class="section-sm bg-ox-light" id="finance">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="eyebrow">ไฟแนนซ์ครบทุกเจ้า</div>
+      <h2 class="sec-title mt-1">จัดไฟแนนซ์ได้<span class="u">กว่า 10 สถาบัน</span></h2>
+      <div class="divider mx-auto"></div>
+      <p class="text-muted mt-2">เปรียบเทียบดอกเบี้ยหลายเจ้าในที่เดียว อนุมัติไว เริ่มต้น 2.79% — เคสเครดิตติดปัญหาก็มีทางจัด</p>
+    </div>
+
+    <!-- 7 เจ้าหลัก -->
+    <div class="row g-3 justify-content-center">
+      <div class="col-6 col-md-3"><div class="fin-card"><img class="fin-logo big" src="{% static 'img/finance/tisco.png' %}" alt="TISCO"><div class="fin-name">ทิสโก้</div></div></div>
+      <div class="col-6 col-md-3"><div class="fin-card"><img class="fin-logo" src="{% static 'img/finance/kkp.png' %}" alt="KKP"><div class="fin-name">เกียรตินาคิน</div></div></div>
+      <div class="col-6 col-md-3"><div class="fin-card"><img class="fin-logo big" src="{% static 'img/finance/krungsri.svg' %}" alt="Krungsri"><div class="fin-name">กรุงศรี · Car4Cash</div></div></div>
+      <div class="col-6 col-md-3"><div class="fin-card"><img class="fin-logo small" src="{% static 'img/finance/kbank.svg' %}" alt="KBANK"><div class="fin-name">กสิกร · KLeasing</div></div></div>
+      <div class="col-6 col-md-3"><div class="fin-card"><img class="fin-logo" src="{% static 'img/finance/ttb.png' %}" alt="TTB"><div class="fin-name">ธนชาต · ทีทีบี</div></div></div>
+      <div class="col-6 col-md-3"><div class="fin-card"><img class="fin-logo" src="{% static 'img/finance/aeon.svg' %}" alt="AEON"><div class="fin-name">อีออน</div></div></div>
+      <div class="col-6 col-md-3"><div class="fin-card"><img class="fin-logo small" src="{% static 'img/finance/cimb.svg' %}" alt="CIMB"><div class="fin-name">ซีไอเอ็มบี ไทย ออโต้</div></div></div>
+    </div>
+
+    <!-- 3 เจ้าเสริม (มีเงื่อนไข) -->
+    <div class="mt-4">
+      <div class="text-center text-muted small mb-3">— ทางเลือกเสริม (มีเงื่อนไขเฉพาะ) —</div>
+      <div class="row g-3 justify-content-center">
+        <div class="col-6 col-md-4 col-lg-3"><div class="fin-card"><img class="fin-logo small" src="{% static 'img/finance/nissan.svg' %}" alt="Nissan Leasing"><div class="fin-name">นิสสัน ลีสซิ่ง</div><div class="fin-note">เฉพาะรถ Nissan</div></div></div>
+        <div class="col-6 col-md-4 col-lg-3"><div class="fin-card"><img class="fin-logo" src="{% static 'img/finance/cathay.png' %}" alt="Cathay Leasing"><div class="fin-name">คาเธ่ย์ ลีสซิ่ง</div><div class="fin-note">เคสเครดิตติดปัญหา · ต้องมีคนค้ำ</div></div></div>
+        <div class="col-6 col-md-4 col-lg-3"><div class="fin-card"><img class="fin-logo" src="{% static 'img/finance/inhouse.svg' %}" alt="In-House"><div class="fin-name">ไฟแนนซ์นอก · จัดเอง</div><div class="fin-note">ทางเลือกสำหรับเคสจัดยาก</div></div></div>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="https://line.me/R/oaMessage/{{ SITE_LINE|urlencode }}/?{{ 'สนใจสอบถามจัดไฟแนนซ์ครับ/ค่ะ 🙏'|urlencode }}" class="btn btn-ox px-4"><i class="bi bi-cash-coin me-1"></i> ปรึกษาจัดไฟแนนซ์ฟรี</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PROMO ===================== -->
+<section class="section-sm">
+  <div class="container">
+    <div class="promo p-4 p-lg-5">
+      <div class="row align-items-center g-4 position-relative">
+        <div class="col-lg-8">
+          <span class="badge bg-warning text-dark mb-2 px-3 py-2">โปรโมชันเดือนนี้</span>
+          {% if promotions %}
+          <div class="big mb-2">{{ promotions.0.title }}</div>
+          <p class="mb-0" style="color:#ecdefb">{{ promotions.0.detail|default:"ดอกเบี้ยพิเศษเริ่มต้น 2.79% พร้อมของแถมจัดเต็ม + Car Spa ฟรี เมื่อออกรถภายในเดือนนี้" }}</p>
+          {% else %}
+          <div class="big mb-2">ออกรถ 0 บาท · ฟรีประกันชั้น 1</div>
+          <p class="mb-0" style="color:#ecdefb">ดอกเบี้ยพิเศษเริ่มต้น 2.79% รับฟรี! ชุดของแถมจัดเต็ม + Car Spa มูลค่ากว่า 15,000 บาท เมื่อออกรถภายในเดือนนี้</p>
+          {% endif %}
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <a href="https://line.me/R/oaMessage/{{ SITE_LINE|urlencode }}/?{{ 'สนใจรับโปรโมชันเดือนนี้ครับ/ค่ะ 🙏'|urlencode }}" class="btn btn-gold btn-lg px-4 me-2 mb-2"><i class="bi bi-line me-1"></i> รับโปรทาง LINE</a>
+          <a href="tel:{{ SITE_PHONE }}" class="btn btn-ghost btn-lg px-4 mb-2"><i class="bi bi-telephone-fill me-1"></i> โทรเลย</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VIDEOS (TikTok) ===================== -->
+{% if featured_tt %}
+<section class="section-sm">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+      <div>
+        <div class="eyebrow">ดูรถแบบเห็นจริง</div>
+        <h2 class="sec-title mt-1">คลิป<span class="u">รีวิวรถ</span></h2>
+        <div class="divider"></div>
+      </div>
+      <a href="{% url 'about' %}" class="btn btn-outline-ox px-4">ดูคลิปทั้งหมด <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+    {% if featured_tt %}
+    <div class="row g-3">
+      {% for v in featured_tt %}
+      <div class="col-6 col-md-3 col-lg-2">
+        <div class="vid-card" role="button" onclick="playVideo('{{ v.embed_url }}','{{ v.source }}')">
+          <div class="vid-thumb portrait">
+            <img src="{{ v.thumbnail }}" loading="lazy">
+            <span class="vid-play"><i class="bi bi-play-circle-fill"></i></span>
+            <span class="badge bg-dark position-absolute bottom-0 end-0 m-1"><i class="bi bi-tiktok"></i></span>
+          </div>
+          <div class="small mt-1 text-truncate-2">{{ v.title }}</div>
+          {% if v.channel %}<div class="text-muted" style="font-size:.72rem">{{ v.channel }}</div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ===================== REVIEWS ===================== -->
+{% if reviews %}
+<section class="section-sm bg-ox-light" id="reviews">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="eyebrow">ลูกค้าตัวจริง</div>
+      <h2 class="sec-title mt-1">เสียงจาก<span class="u">ลูกค้าของเรา</span></h2>
+      <div class="divider mx-auto"></div>
+      <div class="mt-2"><span class="text-gold fs-5">★★★★★</span> <span class="fw-semibold">4.9/5</span> <span class="text-muted">จากรีวิว Google หลายร้อยรายการ</span></div>
+    </div>
+    <div class="row g-4">
+      {% for r in reviews %}
+      <div class="col-md-4">
+        <div class="rev-card">
+          <div class="stars mb-2">{% for _ in "x"|rjust:r.rating %}★{% endfor %}</div>
+          <p class="quote">“{{ r.content|truncatechars:180 }}”</p>
+          <div class="who">
+            <div class="av">{% if r.author_photo %}<img src="{{ r.author_photo }}" alt="">{% else %}{{ r.customer_name|slice:":1" }}{% endif %}</div>
+            <div><strong>{{ r.customer_name }}</strong>{% if r.branch %}<div class="small text-muted"><i class="bi bi-geo-alt-fill text-ox"></i> {{ r.branch.name }}</div>{% elif r.vehicle %}<div class="small text-muted">{{ r.vehicle.title }}</div>{% endif %}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4"><a href="{% url 'reviews' %}" class="btn btn-ox px-4">ดูรีวิวทั้งหมด <i class="bi bi-arrow-right ms-1"></i></a></div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ===================== BRANCHES ===================== -->
+{% if branches %}
+<section class="section-sm" id="branches">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="eyebrow">มาเยี่ยมชมเราได้</div>
+      <h2 class="sec-title mt-1">สาขา<span class="u">ของเรา</span></h2>
+      <div class="divider mx-auto"></div>
+    </div>
+    <div class="row g-4 justify-content-center">
+      {% for b in branches %}
+      <div class="col-md-4">
+        <div class="branch">
+          {% with photo=b.photos.first %}
+          {% if photo %}<img class="b-ph" src="{{ photo.image.url }}" alt="{{ b.name }}">
+          {% else %}<div class="b-ph-ph"><i class="bi bi-shop"></i></div>{% endif %}
+          {% endwith %}
+          <div class="b-body">
+            <h5 class="text-ox">{{ b.name }}</h5>
+            <p class="small text-muted mb-2"><i class="bi bi-geo-alt-fill text-ox"></i> {{ b.address }}</p>
+            {% if b.map_url or b.google_maps_url or b.lat and b.lng or b.address %}
+            <a href="{% if b.map_url %}{{ b.map_url }}{% elif b.google_maps_url %}{{ b.google_maps_url }}{% elif b.lat and b.lng %}https://www.google.com/maps/search/?api=1&query={{ b.lat }},{{ b.lng }}{% else %}https://www.google.com/maps/search/?api=1&query={{ b.address|urlencode }}{% endif %}"
+               target="_blank" rel="noopener" class="btn btn-sm btn-outline-ox w-100">🗺️ ดูแผนที่</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ===================== CTA BAND ===================== -->
+<section class="section-sm">
+  <div class="container">
+    <div class="cta-band text-center">
+      <h2 class="mb-2 text-white" style="font-size:2rem">พร้อมออกรถคันใหม่แล้วหรือยัง?</h2>
+      <p class="mb-4" style="color:#e6d8fb">ปรึกษาทีมงานฟรี ไม่มีค่าใช้จ่าย เลือกรถที่ใช่ในงบที่ใช่ พร้อมส่งถึงบ้าน</p>
+      <a href="https://line.me/R/oaMessage/{{ SITE_LINE|urlencode }}/?{{ 'สนใจออกรถครับ/ค่ะ 🙏'|urlencode }}" class="btn btn-gold btn-lg px-4 me-2 mb-2"><i class="bi bi-line me-1"></i> แชทเลย {{ SITE_LINE }}</a>
+      <a href="tel:{{ SITE_PHONE }}" class="btn btn-ghost btn-lg px-4 mb-2"><i class="bi bi-telephone-fill me-1"></i> {{ SITE_PHONE }}</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// นับเลขวิ่งเมื่อเลื่อนถึงแถบสถิติ
+(function(){
+  function run(el){
+    var target = parseFloat(el.dataset.target) || 0,
+        dec = parseInt(el.dataset.decimals||0), start = null, dur = 1500;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts-start)/dur, 1),
+          val = (target*(0.5-Math.cos(Math.PI*p)/2));
+      el.textContent = dec ? val.toFixed(dec) : Math.round(val).toLocaleString('en-US');
+      if(p<1) requestAnimationFrame(step);
+      else el.textContent = dec ? target.toFixed(dec) : target.toLocaleString('en-US');
+    }
+    requestAnimationFrame(step);
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ run(e.target); io.unobserve(e.target); }
+    });
+  }, {threshold:.4});
+  document.querySelectorAll('.counter').forEach(function(c){ io.observe(c); });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,6 @@
+# Caddy = reverse proxy + auto HTTPS (ออกใบ SSL ให้เอง ฟรี)
+# แก้ track.oxletauto.co.th เป็นโดเมนจริงที่ชี้มาที่ VPS นี้
+track.oxletauto.co.th {
+    encode gzip zstd
+    reverse_proxy web:8000
+}

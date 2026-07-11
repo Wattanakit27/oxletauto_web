@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}รถขายแล้ว — จัดการ{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:840px">
+  <div class="d-flex align-items-center mb-2">
+    <h3 class="text-ox mb-0">🏷️ รถที่ขายแล้ว</h3>
+    <a href="{% url 'all_cars' %}" class="btn btn-sm btn-outline-secondary ms-auto">← กลับรายการรถ</a>
+  </div>
+  <p class="text-muted small mb-3">คลังรถที่ขายไปแล้ว (ลูกค้าไม่เห็น) · ดึงกลับมาขายใหม่หรือแก้ไขได้</p>
+
+  {% for car in cars %}
+  <div class="card border-0 shadow-sm mb-2"><div class="card-body d-flex align-items-center gap-3 py-2">
+    {% if car.cover_image %}<img src="{{ car.cover_image.url }}" style="width:84px;height:56px;object-fit:cover;border-radius:5px">
+    {% else %}<div class="bg-light rounded" style="width:84px;height:56px"></div>{% endif %}
+    <div class="flex-fill">
+      <div class="fw-semibold">{{ car.title }}</div>
+      <div class="small text-muted">{{ car.price|intcomma }} ฿ · ขายเมื่อ {{ car.updated_at|date:"j M Y" }}</div>
+    </div>
+    <a href="{{ car.get_absolute_url }}" target="_blank" class="btn btn-sm btn-outline-secondary">ดู</a>
+    <a href="{% url 'car_edit' car.slug %}" class="btn btn-sm btn-dark">✏️ แก้ไข</a>
+    <form method="post" action="{% url 'car_relist' car.slug %}" onsubmit="return confirm('ดึง {{ car.title|escapejs }} กลับมาขายใหม่?')">{% csrf_token %}
+      <button class="btn btn-sm btn-success">♻️ ดึงกลับมาขาย</button>
+    </form>
+  </div></div>
+  {% empty %}
+  <p class="text-muted">ยังไม่มีรถที่ขายแล้ว</p>
+  {% endfor %}
+</div>
+{% endblock %}

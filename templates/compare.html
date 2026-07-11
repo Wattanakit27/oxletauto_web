@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}เปรียบเทียบรถ — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="text-ox mb-3">เปรียบเทียบรถ <small class="text-muted fs-6">(สูงสุด 3 คัน)</small></h3>
+  {% if cars %}
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle bg-white">
+      <thead><tr><th style="width:18%"></th>
+        {% for c in cars %}<th class="text-center">
+          {% if c.cover_image %}<img src="{{ c.cover_image.url }}" style="height:90px;object-fit:cover" class="rounded mb-1">{% endif %}
+          <div><a href="{{ c.get_absolute_url }}">{{ c.title }}</a></div>
+        </th>{% endfor %}
+      </tr></thead>
+      <tbody>
+        <tr><th>ราคา</th>{% for c in cars %}<td class="text-center price">{{ c.price|intcomma }} ฿</td>{% endfor %}</tr>
+        <tr><th>ค่างวด</th>{% for c in cars %}<td class="text-center">{{ c.installment_min|intcomma }} ฿</td>{% endfor %}</tr>
+        <tr><th>ปี</th>{% for c in cars %}<td class="text-center">{{ c.year }}</td>{% endfor %}</tr>
+        <tr><th>รุ่นย่อย</th>{% for c in cars %}<td class="text-center">{{ c.submodel|default:"-" }}</td>{% endfor %}</tr>
+        <tr><th>เกียร์</th>{% for c in cars %}<td class="text-center">{{ c.get_transmission_display }}</td>{% endfor %}</tr>
+        <tr><th>ประเภท</th>{% for c in cars %}<td class="text-center">{{ c.car_type.name|default:"-" }}</td>{% endfor %}</tr>
+        <tr><th>เลขไมล์</th>{% for c in cars %}<td class="text-center">{{ c.mileage|intcomma }} กม.</td>{% endfor %}</tr>
+        <tr><th>เชื้อเพลิง</th>{% for c in cars %}<td class="text-center">{{ c.get_fuel_display }}</td>{% endfor %}</tr>
+        <tr><th>เครื่องยนต์</th>{% for c in cars %}<td class="text-center">{{ c.engine_cc|intcomma }} cc</td>{% endfor %}</tr>
+        <tr><th>ขับเคลื่อน</th>{% for c in cars %}<td class="text-center">{{ c.get_drivetrain_display }}</td>{% endfor %}</tr>
+        <tr><th>สีภายนอก</th>{% for c in cars %}<td class="text-center">{{ c.color_exterior|default:"-" }}</td>{% endfor %}</tr>
+        <tr><th>สีภายใน</th>{% for c in cars %}<td class="text-center">{{ c.color_interior|default:"-" }}</td>{% endfor %}</tr>
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-light border">ยังไม่มีรถให้เปรียบเทียบ — ไปที่ <a href="{% url 'all_cars' %}">ค้นหารถ</a> แล้วกดปุ่มเปรียบเทียบ <i class="bi bi-bar-chart-steps"></i> บนการ์ดรถ</div>
+  {% endif %}
+</div>
+{% endblock %}

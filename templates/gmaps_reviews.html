@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}รีวิว Google (สด) — {{ SITE_NAME }}{% endblock %}
+{% block head %}
+<style>
+  gmp-place-details{ width:100%; max-width:520px; --gmp-mat-color-surface:#fff; }
+  .gmp-col{ display:flex; justify-content:center; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="text-ox mb-1">รีวิว Google (สด) — ทดลอง Places UI Kit</h3>
+  <p class="text-muted small mb-4">Google เรนเดอร์เอง → โชว์รูป+รีวิวจริงจากหน้า Google Maps (รวมรูปที่ลูกค้าแนบ)</p>
+
+  <div class="row g-4">
+    {% for b in google_branches %}
+    <div class="col-lg-6 gmp-col">
+      <div>
+        <h6 class="text-ox text-center mb-2">{{ b.name }}</h6>
+        <gmp-place-details>
+          <gmp-place-details-place-request place="{{ b.google_place_id }}"></gmp-place-details-place-request>
+          <gmp-place-content-config>
+            <gmp-place-media lightbox-preferred></gmp-place-media>
+            <gmp-place-rating></gmp-place-rating>
+            <gmp-place-reviews></gmp-place-reviews>
+            <gmp-place-attribution light-scheme-color="gray" dark-scheme-color="white"></gmp-place-attribution>
+          </gmp-place-content-config>
+        </gmp-place-details>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div id="gmp-error" class="alert alert-warning mt-4 d-none"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // โหลด Maps JavaScript API (bootstrap loader ทางการ)
+  (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await(a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+    key: "{{ gmaps_key }}",
+    v: "weekly",
+  });
+
+  // โหลด component library + จับ error (เช่น ยังไม่เปิด Maps JavaScript API)
+  (async () => {
+    try {
+      await google.maps.importLibrary("places");
+    } catch (e) {
+      const el = document.getElementById('gmp-error');
+      el.classList.remove('d-none');
+      el.innerHTML = "โหลด Google Maps ไม่สำเร็จ: " + e.message +
+        "<br>ต้องเปิด <b>Maps JavaScript API</b> ใน Google Cloud + อนุญาต API นี้ในคีย์ (ถ้า restrict ไว้)";
+    }
+  })();
+</script>
+{% endblock %}

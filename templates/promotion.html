@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}โปรโมชัน — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-3">
+    <h3 class="text-ox mb-0">โปรโมชัน</h3>
+    {% if request.user.is_staff %}<a href="{% url 'promo_add' %}" class="btn btn-success btn-sm ms-auto">➕ เพิ่มโปรโมชัน</a>{% endif %}
+  </div>
+  <div class="row g-3">
+    {% for p in promotions %}
+    <div class="col-md-6 col-lg-4"><div class="card h-100 border-0 shadow-sm">
+      {% if p.image %}<img src="{{ p.image.url }}" class="card-img-top" style="height:180px;object-fit:cover">{% endif %}
+      <div class="card-body">
+        <h6 class="text-ox">{{ p.title }}</h6>
+        <p class="small text-muted">{{ p.detail }}</p>
+        {% if p.vehicle %}<a href="{{ p.vehicle.get_absolute_url }}" class="btn btn-ox btn-sm">ดูรถคันนี้</a>{% endif %}
+        {% if request.user.is_staff %}
+        <div class="d-flex gap-1 mt-2 pt-2 border-top">
+          <a href="{% url 'promo_edit' p.pk %}" class="btn btn-sm btn-dark flex-fill">✏️ แก้ไข</a>
+          <form method="post" action="{% url 'promo_delete' p.pk %}" class="flex-fill" onsubmit="return confirm('ลบโปรนี้?')">{% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger w-100">🗑️</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div></div>
+    {% empty %}<p class="text-muted">ยังไม่มีโปรโมชัน</p>{% endfor %}
+  </div>
+
+  <div class="card border-0 shadow-sm mt-4"><div class="card-body">
+    <h6 class="text-ox">ขอราคา / สอบถามโปร</h6>
+    <form method="post" action="{% url 'lead_submit' %}" class="row g-2">{% csrf_token %}
+      <input type="hidden" name="source_page" value="promotion">
+      <div class="col-md-3"><input name="name" class="form-control form-control-sm" placeholder="ชื่อ" required></div>
+      <div class="col-md-3"><input name="phone" class="form-control form-control-sm" placeholder="เบอร์โทร" required></div>
+      <div class="col-md-3"><input name="email" class="form-control form-control-sm" placeholder="อีเมล"></div>
+      <div class="col-md-3"><button class="btn btn-ox btn-sm w-100">ขอราคา</button></div>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oxlet Auto — รถมือสองคุณภาพมาตรฐาน พร้อมศูนย์บริการ เจ้าแรกของไทย</title>
+
+<!-- Bootstrap + Icons + Fonts -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ox:#6d28d9;          /* ม่วงหลัก */
+  --ox-2:#7c3aed;
+  --ox-deep:#4c1d95;     /* ม่วงเข้ม */
+  --ox-dark:#2e1065;     /* ม่วงเข้มสุด (footer/hero) */
+  --ox-light:#f4f0fd;    /* ม่วงอ่อนพื้นหลัง */
+  --ox-tint:#ede7fb;
+  --gold:#f5a623;        /* สีเน้นราคา/ดาว */
+  --ink:#241a3a;         /* ตัวหนังสือเข้ม */
+  --muted:#726a86;
+}
+*{scroll-behavior:smooth}
+body{font-family:'Noto Sans Thai',sans-serif;color:var(--ink);background:#fff;overflow-x:hidden}
+h1,h2,h3,h4,h5,.font-display{font-family:'Prompt',sans-serif;font-weight:700}
+a{text-decoration:none}
+.container{max-width:1180px}
+
+/* ===== utils ===== */
+.text-ox{color:var(--ox)!important}
+.bg-ox{background:var(--ox)!important}
+.bg-ox-light{background:var(--ox-light)!important}
+.text-gold{color:var(--gold)!important}
+.section{padding:76px 0}
+.section-sm{padding:52px 0}
+.eyebrow{color:var(--ox);font-weight:700;letter-spacing:.14em;font-size:.8rem;text-transform:uppercase}
+.sec-title{font-size:2rem;font-weight:800;color:var(--ink);line-height:1.2}
+.sec-title .u{position:relative;color:var(--ox)}
+.divider{width:64px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--ox),var(--gold));margin:14px 0 6px}
+.btn-ox{background:var(--ox);color:#fff;border:none;font-weight:600;border-radius:12px}
+.btn-ox:hover{background:var(--ox-deep);color:#fff;transform:translateY(-2px)}
+.btn-gold{background:var(--gold);color:#3a2600;border:none;font-weight:700;border-radius:12px}
+.btn-gold:hover{background:#e2950c;color:#3a2600;transform:translateY(-2px)}
+.btn-ghost{border:1.5px solid rgba(255,255,255,.6);color:#fff;font-weight:600;border-radius:12px}
+.btn-ghost:hover{background:#fff;color:var(--ox)}
+.btn-ox,.btn-gold,.btn-ghost{transition:.18s}
+
+/* ===== topbar ===== */
+.topbar{background:var(--ox-dark);color:#e8defb;font-size:.82rem}
+.topbar a{color:#e8defb}
+.topbar a:hover{color:#fff}
+
+/* ===== navbar ===== */
+.navbar{background:rgba(255,255,255,.96);backdrop-filter:blur(8px)}
+.navbar .brand-logo{font-family:'Prompt';font-weight:800;font-size:1.5rem;color:var(--ox);letter-spacing:.5px}
+.navbar .brand-logo small{display:block;font-family:'Noto Sans Thai';font-weight:500;font-size:.62rem;letter-spacing:.22em;color:var(--muted);margin-top:-4px}
+.navbar .nav-link{color:#33294d;font-weight:500;padding:.5rem .9rem!important;border-radius:10px}
+.navbar .nav-link:hover{color:var(--ox);background:var(--ox-light)}
+
+/* ===== hero ===== */
+.hero{position:relative;color:#fff;padding:96px 0 130px;
+  background:
+    linear-gradient(115deg,rgba(46,16,101,.94) 0%,rgba(76,29,149,.86) 42%,rgba(109,40,217,.55) 100%),
+    url('media/branch_photos/1-0.jpg') center/cover;}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:70px;
+  background:linear-gradient(to top,#fff,transparent)}
+.hero .badge-first{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:7px 16px;font-size:.82rem;font-weight:600;backdrop-filter:blur(4px)}
+.hero h1{font-size:3rem;font-weight:800;line-height:1.14;text-shadow:0 4px 24px rgba(0,0,0,.25)}
+.hero .lead{color:#e9defc;font-size:1.06rem}
+.hero .stat-num{font-family:'Prompt';font-weight:800;font-size:1.7rem;line-height:1}
+.hero .stat-lbl{font-size:.78rem;color:#d9c9f5}
+
+/* search card */
+.search-card{background:rgba(255,255,255,.98);border-radius:18px;box-shadow:0 24px 60px rgba(30,10,70,.35);padding:22px}
+.search-card h6{color:var(--ox);font-weight:700}
+.search-card .form-select,.search-card .form-control{border-radius:10px;border:1.5px solid #e4ddf3;font-size:.92rem;padding:.6rem .8rem}
+.search-card .form-select:focus,.search-card .form-control:focus{border-color:var(--ox);box-shadow:0 0 0 .18rem rgba(109,40,217,.15)}
+.chip{display:inline-block;font-size:.78rem;background:var(--ox-light);color:var(--ox);border-radius:999px;padding:4px 12px;margin:3px 3px 0 0;font-weight:600}
+
+/* ===== trust strip ===== */
+.trust{background:#fff;margin-top:-46px;position:relative;z-index:5}
+.trust .card{border:none;border-radius:16px;box-shadow:0 12px 34px rgba(60,30,120,.10);padding:20px}
+.trust .t-item{display:flex;gap:14px;align-items:center;padding:10px 6px}
+.trust .t-ico{flex:0 0 46px;height:46px;border-radius:12px;display:grid;place-items:center;
+  background:var(--ox-light);color:var(--ox);font-size:1.35rem}
+.trust .t-item strong{display:block;font-size:.98rem}
+.trust .t-item span{font-size:.78rem;color:var(--muted)}
+
+/* ===== category ===== */
+.cat{position:relative;border-radius:18px;overflow:hidden;display:block;height:190px;box-shadow:0 10px 28px rgba(60,30,120,.12)}
+.cat img{width:100%;height:100%;object-fit:cover;transition:.4s}
+.cat:hover img{transform:scale(1.08)}
+.cat .cat-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(46,16,101,.85),rgba(46,16,101,.05))}
+.cat .cat-txt{position:absolute;left:16px;bottom:14px;color:#fff}
+.cat .cat-txt b{font-family:'Prompt';font-size:1.15rem;display:block}
+.cat .cat-txt span{font-size:.8rem;color:#e3d6fb}
+.cat .cat-arrow{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.9);color:var(--ox);display:grid;place-items:center;transition:.25s;transform:translateX(6px);opacity:0}
+.cat:hover .cat-arrow{transform:translateX(0);opacity:1}
+
+/* ===== brands ===== */
+.brand-strip{background:var(--ox-light);border-radius:18px;padding:26px}
+.brand-strip img{height:42px;object-fit:contain;filter:grayscale(1);opacity:.65;transition:.25s}
+.brand-strip .col:hover img{filter:none;opacity:1;transform:scale(1.08)}
+
+/* ===== car card ===== */
+.car-card{border:none;border-radius:16px;overflow:hidden;background:#fff;
+  box-shadow:0 8px 26px rgba(60,30,120,.09);transition:.2s;height:100%}
+.car-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(60,30,120,.18)}
+.car-card .ph{position:relative;height:186px;overflow:hidden}
+.car-card .ph img{width:100%;height:100%;object-fit:cover;transition:.4s}
+.car-card:hover .ph img{transform:scale(1.07)}
+.car-card .tag{position:absolute;top:12px;left:12px;background:var(--ox);color:#fff;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:8px}
+.car-card .tag.hot{background:var(--gold);color:#3a2600}
+.car-card .fav{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);color:var(--ox);display:grid;place-items:center;border:none}
+.car-card .title{font-family:'Prompt';font-weight:600;font-size:1rem;color:var(--ink);line-height:1.3;min-height:2.6em}
+.car-card .spec{font-size:.78rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px;margin:8px 0}
+.car-card .spec i{color:var(--ox)}
+.car-card .price{font-family:'Prompt';font-weight:800;color:var(--ox);font-size:1.32rem}
+.car-card .install{font-size:.8rem;color:var(--gold);font-weight:600}
+.car-card .btn-view{background:var(--ox-light);color:var(--ox);font-weight:600;border-radius:10px;transition:.18s}
+.car-card:hover .btn-view{background:var(--ox);color:#fff}
+
+/* ===== why ===== */
+.why{background:linear-gradient(160deg,var(--ox-dark),var(--ox-deep));color:#fff;border-radius:26px;overflow:hidden}
+.why .w-item{display:flex;gap:16px;padding:16px}
+.why .w-ico{flex:0 0 52px;height:52px;border-radius:14px;background:rgba(255,255,255,.12);
+  display:grid;place-items:center;font-size:1.5rem;color:#e9d5ff}
+.why .w-item strong{font-family:'Prompt';font-size:1.05rem;display:block;margin-bottom:2px}
+.why .w-item p{font-size:.86rem;color:#d6c6f2;margin:0}
+.why-photo{height:100%;min-height:420px;object-fit:cover;width:100%}
+
+/* ===== services ===== */
+.svc{border:1px solid #eee6fb;border-radius:18px;padding:28px 22px;height:100%;transition:.2s;background:#fff}
+.svc:hover{border-color:var(--ox);transform:translateY(-5px);box-shadow:0 16px 36px rgba(60,30,120,.14)}
+.svc .s-ico{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;font-size:1.7rem;
+  background:linear-gradient(135deg,var(--ox),var(--ox-2));color:#fff;margin-bottom:16px}
+.svc h5{font-size:1.12rem}
+.svc ul{padding-left:1.1rem;margin:0;color:var(--muted);font-size:.88rem}
+.svc li{margin-bottom:4px}
+
+/* ===== promo ===== */
+.promo{background:linear-gradient(120deg,var(--ox),var(--ox-2));border-radius:24px;color:#fff;overflow:hidden;position:relative}
+.promo::before{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.08)}
+.promo::after{content:"";position:absolute;left:-40px;bottom:-80px;width:220px;height:220px;border-radius:50%;background:rgba(245,166,35,.18)}
+.promo .big{font-family:'Prompt';font-weight:800;font-size:2.4rem;line-height:1}
+
+/* ===== reviews ===== */
+.rev-card{background:#fff;border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(60,30,120,.08);height:100%}
+.rev-card .stars{color:var(--gold)}
+.rev-card .who{display:flex;align-items:center;gap:12px;margin-top:14px}
+.rev-card .who .av{width:42px;height:42px;border-radius:50%;background:var(--ox-light);color:var(--ox);
+  display:grid;place-items:center;font-weight:700;font-family:'Prompt'}
+.rev-card .quote{font-size:.92rem;color:#4a4160;line-height:1.55}
+
+/* ===== branches ===== */
+.branch{border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(60,30,120,.10);background:#fff;height:100%}
+.branch .b-ph{height:180px;object-fit:cover;width:100%}
+.branch .b-body{padding:18px}
+.branch .b-body h5{font-size:1.05rem}
+
+/* ===== cta band ===== */
+.cta-band{background:
+  linear-gradient(120deg,rgba(46,16,101,.95),rgba(109,40,217,.9)),
+  url('media/branch_photos/2-0.jpg') center/cover fixed;
+  color:#fff;border-radius:26px;padding:52px 40px}
+
+/* ===== footer ===== */
+footer{background:var(--ox-dark);color:#d8ccf0}
+footer a{color:#c9b8ec}
+footer a:hover{color:#fff}
+footer .f-title{font-family:'Prompt';color:#fff;font-weight:600;margin-bottom:14px}
+footer .soc{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;display:grid;place-items:center;transition:.2s}
+footer .soc:hover{background:var(--ox);transform:translateY(-3px)}
+
+/* floating */
+.float-line{position:fixed;right:20px;bottom:22px;z-index:900;background:#06c755;color:#fff;
+  border-radius:999px;padding:12px 20px;font-weight:700;box-shadow:0 10px 26px rgba(6,199,85,.4);display:flex;gap:8px;align-items:center}
+.float-line:hover{color:#fff;transform:translateY(-3px)}
+
+/* ===== stats counter band ===== */
+.stats-band{background:linear-gradient(120deg,var(--ox-dark),var(--ox-deep) 60%,var(--ox));color:#fff;border-radius:26px;position:relative;overflow:hidden}
+.stats-band::before{content:"";position:absolute;right:-70px;top:-70px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.06)}
+.stats-band::after{content:"";position:absolute;left:8%;bottom:-90px;width:220px;height:220px;border-radius:50%;background:rgba(245,166,35,.14)}
+.stat-cell{text-align:center;padding:22px 10px;position:relative;z-index:2}
+.stat-cell .num{font-family:'Prompt';font-weight:800;font-size:2.6rem;line-height:1;color:#fff}
+.stat-cell .num .suffix{color:var(--gold)}
+.stat-cell .lbl{font-size:.9rem;color:#d6c6f2;margin-top:6px}
+.stat-cell .ic{font-size:1.4rem;color:#e9d5ff;margin-bottom:6px;display:block}
+.stat-sep{border-right:1px solid rgba(255,255,255,.14)}
+@media(max-width:767px){.stat-sep{border-right:none;border-bottom:1px solid rgba(255,255,255,.12)}}
+
+/* ===== owner / founder ===== */
+.owner-photo{position:relative;border-radius:22px;overflow:hidden;box-shadow:0 20px 50px rgba(60,30,120,.22);min-height:440px;
+  background:linear-gradient(160deg,var(--ox),var(--ox-dark));display:grid;place-items:center;color:#fff;text-align:center}
+.owner-photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.owner-photo .ph-note{position:relative;z-index:2;padding:20px}
+.owner-photo .ph-note i{font-size:3rem;opacity:.6}
+.owner-badge{position:absolute;left:18px;bottom:18px;z-index:3;background:rgba(255,255,255,.95);color:var(--ox);
+  border-radius:14px;padding:10px 16px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.owner-badge b{font-family:'Prompt';display:block;font-size:1.05rem;line-height:1.1}
+.owner-badge span{font-size:.78rem;color:var(--muted)}
+.owner-quote{font-family:'Prompt';font-weight:500;font-size:1.4rem;line-height:1.5;color:var(--ink)}
+.owner-quote .mark{color:var(--ox);font-size:2.4rem;font-weight:800;line-height:0;vertical-align:-.35em;margin-right:4px}
+.sign{font-family:'Prompt';font-weight:700;color:var(--ox);font-size:1.15rem}
+.team-av{width:66px;height:66px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 4px 14px rgba(60,30,120,.18);margin-left:-14px}
+.team-av:first-child{margin-left:0}
+.team-more{width:66px;height:66px;border-radius:50%;background:var(--ox-light);color:var(--ox);display:grid;place-items:center;
+  font-weight:700;font-family:'Prompt';border:3px solid #fff;margin-left:-14px}
+.team-role{display:flex;gap:12px;align-items:flex-start;background:var(--ox-light);border-radius:14px;padding:14px;height:100%}
+.team-role i{font-size:1.4rem;color:var(--ox);flex:0 0 auto;margin-top:2px}
+.team-role b{font-family:'Prompt';font-size:.95rem;display:block;line-height:1.2}
+.team-role span{font-size:.78rem;color:var(--muted)}
+
+@media(max-width:991px){
+  .hero{padding:70px 0 110px}
+  .hero h1{font-size:2.2rem}
+  .why-photo{min-height:260px}
+  .owner-photo{min-height:300px}
+  .owner-quote{font-size:1.15rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== TOP BAR ===================== -->
+<div class="topbar py-2 d-none d-md-block">
+  <div class="container d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-4">
+      <span><i class="bi bi-telephone-fill me-1"></i> 097-821-8888</span>
+      <span><i class="bi bi-clock me-1"></i> เปิดทุกวัน 08:30 – 16:30 น.</span>
+      <span><i class="bi bi-geo-alt-fill me-1"></i> 3 สาขา ชลบุรี · สมุทรปราการ · บางนา</span>
+    </div>
+    <div class="d-flex gap-3">
+      <a href="#"><i class="bi bi-line"></i> @oxletauto</a>
+      <a href="https://www.facebook.com/oxlet.bankao"><i class="bi bi-facebook"></i></a>
+      <a href="#"><i class="bi bi-instagram"></i></a>
+      <a href="#"><i class="bi bi-youtube"></i></a>
+      <a href="#"><i class="bi bi-tiktok"></i></a>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar navbar-expand-lg shadow-sm sticky-top py-2">
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <span class="brand-logo">OXLET AUTO<small>รถมือสองคุณภาพมาตรฐาน</small></span>
+    </a>
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="#cars">ค้นหารถ</a></li>
+        <li class="nav-item"><a class="nav-link" href="#category">ประเภทรถ</a></li>
+        <li class="nav-item"><a class="nav-link" href="#why">ทำไมต้อง Oxlet</a></li>
+        <li class="nav-item"><a class="nav-link" href="#services">บริการ</a></li>
+        <li class="nav-item"><a class="nav-link" href="#reviews">รีวิวลูกค้า</a></li>
+        <li class="nav-item"><a class="nav-link" href="#branches">สาขา</a></li>
+      </ul>
+      <a href="tel:0978218888" class="btn btn-ox px-3"><i class="bi bi-telephone-fill me-1"></i> โทรเลย</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="badge-first mb-3"><i class="bi bi-patch-check-fill text-gold"></i> โชว์รูมรถมือสองพร้อมศูนย์บริการ · เจ้าแรกของไทย</span>
+        <h1 class="mb-3">รถมือสอง<span class="text-gold">คุณภาพมาตรฐาน</span><br>พร้อมศูนย์บริการครบวงจร</h1>
+        <p class="lead mb-4">คัดทุกคัน ตรวจสภาพเต็มระบบ · รับประกันเครื่อง+เกียร์ 1 ปี<br>ดอกเบี้ยเริ่มต้น 2.79% จัดไฟแนนซ์ได้ทุกธนาคาร · ส่งรถถึงบ้านทั่วไทย</p>
+        <div class="d-flex gap-2 flex-wrap mb-4">
+          <a href="#cars" class="btn btn-gold btn-lg px-4"><i class="bi bi-search me-1"></i> ดูรถทั้งหมด</a>
+          <a href="#" class="btn btn-ghost btn-lg px-4"><i class="bi bi-chat-dots me-1"></i> ปรึกษาฟรีทาง LINE</a>
+        </div>
+        <div class="row g-3">
+          <div class="col-4"><div class="stat-num text-gold">109+</div><div class="stat-lbl">รถพร้อมส่งมอบ</div></div>
+          <div class="col-4"><div class="stat-num text-gold">2.79%</div><div class="stat-lbl">ดอกเบี้ยเริ่มต้น</div></div>
+          <div class="col-4"><div class="stat-num text-gold">3 สาขา</div><div class="stat-lbl">พร้อมศูนย์บริการ</div></div>
+        </div>
+      </div>
+
+      <!-- search -->
+      <div class="col-lg-5 offset-lg-1">
+        <div class="search-card">
+          <h6 class="mb-3"><i class="bi bi-search me-1"></i> ค้นหารถที่ใช่สำหรับคุณ</h6>
+          <div class="row g-2">
+            <div class="col-6">
+              <select class="form-select">
+                <option>ทุกยี่ห้อ</option><option>Toyota</option><option>Honda</option>
+                <option>Mazda</option><option>Isuzu</option><option>Ford</option><option>BMW</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <select class="form-select">
+                <option>ทุกประเภท</option><option>รถเก๋ง</option><option>SUV / PPV</option>
+                <option>รถกระบะ</option><option>รถหรู</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <select class="form-select">
+                <option>ทุกช่วงราคา</option><option>ต่ำกว่า 500,000</option>
+                <option>500,000 – 800,000</option><option>800,000 – 1.2 ล้าน</option><option>มากกว่า 1.2 ล้าน</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <select class="form-select">
+                <option>เกียร์ทั้งหมด</option><option>อัตโนมัติ</option><option>ธรรมดา</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <input class="form-control" placeholder="พิมพ์รุ่นรถ เช่น Civic, CR-V, Everest...">
+            </div>
+            <div class="col-12">
+              <button class="btn btn-ox w-100 py-2"><i class="bi bi-search me-1"></i> ค้นหารถ 109 คัน</button>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-muted small me-1">ยอดฮิต:</span>
+            <a href="#cars" class="chip">Honda Civic</a>
+            <a href="#cars" class="chip">CR-V e:HEV</a>
+            <a href="#cars" class="chip">Ford Everest</a>
+            <a href="#cars" class="chip">Isuzu MU-X</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== TRUST STRIP ===================== -->
+<section class="trust">
+  <div class="container">
+    <div class="card">
+      <div class="row g-2">
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-shield-check"></i></div><div><strong>รับประกัน 1 ปี</strong><span>เครื่องยนต์ + เกียร์</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-percent"></i></div><div><strong>ดอกเบี้ย 2.79%</strong><span>จัดได้ทุกธนาคาร</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-tools"></i></div><div><strong>ศูนย์บริการในตัว</strong><span>ดูแลหลังการขาย</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-droplet-half"></i></div><div><strong>Car Spa ฟรี</strong><span>ส่งมอบรถสวยพร้อมขับ</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-truck"></i></div><div><strong>ส่งถึงบ้าน</strong><span>ทั่วประเทศ</span></div></div></div>
+        <div class="col-6 col-lg"><div class="t-item"><div class="t-ico"><i class="bi bi-headset"></i></div><div><strong>ช่วยเหลือ 24 ชม.</strong><span>อุ่นใจตลอดการใช้งาน</span></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CATEGORY ===================== -->
+<section class="section" id="category">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="eyebrow">เลือกตามสไตล์คุณ</div>
+      <h2 class="sec-title mt-1">เลือกซื้อ<span class="u">ตามประเภทรถ</span></h2>
+      <div class="divider mx-auto"></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-6 col-lg-3">
+        <a href="#cars" class="cat">
+          <img src="media/vehicles/honda-civic-fe-15-turbo-el-15-turbo-el-2021-0.jpg" alt="รถเก๋ง">
+          <div class="cat-ov"></div>
+          <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
+          <div class="cat-txt"><b>รถเก๋ง</b><span>City · Civic · Accord · Mazda 2</span></div>
+        </a>
+      </div>
+      <div class="col-6 col-lg-3">
+        <a href="#cars" class="cat">
+          <img src="media/vehicles/honda-crv-20-ehev-rs-20-ehev-rs-2024-0.jpg" alt="SUV">
+          <div class="cat-ov"></div>
+          <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
+          <div class="cat-txt"><b>SUV / PPV</b><span>CR-V · HR-V · MU-X · Everest</span></div>
+        </a>
+      </div>
+      <div class="col-6 col-lg-3">
+        <a href="#cars" class="cat">
+          <img src="media/vehicles/isuzu-d-max-19-ddi-2020-0.jpg" alt="รถกระบะ">
+          <div class="cat-ov"></div>
+          <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
+          <div class="cat-txt"><b>รถกระบะ</b><span>D-Max · Ranger · Triton</span></div>
+        </a>
+      </div>
+      <div class="col-6 col-lg-3">
+        <a href="#cars" class="cat">
+          <img src="media/vehicles/bmw-630d-gt-630d-gt-2018-0.jpg" alt="รถหรู">
+          <div class="cat-ov"></div>
+          <div class="cat-arrow"><i class="bi bi-arrow-right"></i></div>
+          <div class="cat-txt"><b>รถหรู</b><span>BMW · Benz · Continental</span></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- brands -->
+    <div class="brand-strip mt-4">
+      <div class="row row-cols-3 row-cols-md-5 g-4 align-items-center text-center">
+        <div class="col"><img src="media/brands/logo-toyota.png" alt="Toyota"></div>
+        <div class="col"><img src="media/brands/logo-honda.png" alt="Honda"></div>
+        <div class="col"><img src="media/brands/logo-mazda.png" alt="Mazda"></div>
+        <div class="col"><img src="media/brands/logo-nissan.png" alt="Nissan"></div>
+        <div class="col"><img src="media/brands/logo-isizu-new.png" alt="Isuzu"></div>
+        <div class="col"><img src="media/brands/logo-ford.png" alt="Ford"></div>
+        <div class="col"><img src="media/brands/logo-mitsubishi.png" alt="Mitsubishi"></div>
+        <div class="col"><img src="media/brands/logo-mg-new.png" alt="MG"></div>
+        <div class="col"><img src="media/brands/logo-benz.png" alt="Benz"></div>
+        <div class="col d-grid"><a href="#cars" class="btn btn-outline-primary btn-sm align-self-center" style="border-color:var(--ox);color:var(--ox)">ดูทุกยี่ห้อ →</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FEATURED CARS ===================== -->
+<section class="section-sm bg-ox-light" id="cars">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+      <div>
+        <div class="eyebrow">คัดมาให้แล้ว</div>
+        <h2 class="sec-title mt-1">รถแนะนำ<span class="u">ประจำสัปดาห์</span></h2>
+        <div class="divider"></div>
+      </div>
+      <a href="#" class="btn btn-ox px-4">ดูรถทั้งหมด 109 คัน <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+
+    <div class="row g-4">
+      <!-- card 1 -->
+      <div class="col-6 col-lg-3">
+        <div class="car-card">
+          <div class="ph">
+            <span class="tag hot"><i class="bi bi-fire"></i> ขายดี</span>
+            <button class="fav"><i class="bi bi-heart"></i></button>
+            <img src="media/vehicles/honda-civic-fe-20rs-ehev-20rs-ehev-2023-0.jpg" alt="Honda Civic">
+          </div>
+          <div class="p-3">
+            <div class="title">Honda Civic FE 2.0 RS e:HEV</div>
+            <div class="spec"><span><i class="bi bi-calendar3"></i> 2023</span><span><i class="bi bi-speedometer2"></i> 32,000 กม.</span><span><i class="bi bi-fuel-pump"></i> ไฮบริด</span></div>
+            <div class="price">1,159,000 ฿</div>
+            <div class="install mb-2">ผ่อนเริ่ม 15,900 บาท/เดือน</div>
+            <button class="btn btn-view w-100 btn-sm py-2">ดูรายละเอียด</button>
+          </div>
+        </div>
+      </div>
+      <!-- card 2 -->
+      <div class="col-6 col-lg-3">
+        <div class="car-card">
+          <div class="ph">
+            <span class="tag"><i class="bi bi-star-fill"></i> ป้ายแดงไม่ต้อง</span>
+            <button class="fav"><i class="bi bi-heart"></i></button>
+            <img src="media/vehicles/honda-crv-20-ehev-rs-20-ehev-rs-2024-0.jpg" alt="Honda CR-V">
+          </div>
+          <div class="p-3">
+            <div class="title">Honda CR-V 2.0 e:HEV RS</div>
+            <div class="spec"><span><i class="bi bi-calendar3"></i> 2024</span><span><i class="bi bi-speedometer2"></i> 18,500 กม.</span><span><i class="bi bi-fuel-pump"></i> ไฮบริด</span></div>
+            <div class="price">1,489,000 ฿</div>
+            <div class="install mb-2">ผ่อนเริ่ม 20,400 บาท/เดือน</div>
+            <button class="btn btn-view w-100 btn-sm py-2">ดูรายละเอียด</button>
+          </div>
+        </div>
+      </div>
+      <!-- card 3 -->
+      <div class="col-6 col-lg-3">
+        <div class="car-card">
+          <div class="ph">
+            <button class="fav"><i class="bi bi-heart"></i></button>
+            <img src="media/vehicles/ford-everest-20bi-turbo-titanium-4wd-20bi-turbo-titanium-2023-0.jpg" alt="Ford Everest">
+          </div>
+          <div class="p-3">
+            <div class="title">Ford Everest 2.0 Bi-Turbo Titanium 4WD</div>
+            <div class="spec"><span><i class="bi bi-calendar3"></i> 2023</span><span><i class="bi bi-speedometer2"></i> 41,000 กม.</span><span><i class="bi bi-fuel-pump"></i> ดีเซล</span></div>
+            <div class="price">1,359,000 ฿</div>
+            <div class="install mb-2">ผ่อนเริ่ม 18,600 บาท/เดือน</div>
+            <button class="btn btn-view w-100 btn-sm py-2">ดูรายละเอียด</button>
+          </div>
+        </div>
+      </div>
+      <!-- card 4 -->
+      <div class="col-6 col-lg-3">
+        <div class="car-card">
+          <div class="ph">
+            <span class="tag"><i class="bi bi-gem"></i> รถหรู</span>
+            <button class="fav"><i class="bi bi-heart"></i></button>
+            <img src="media/vehicles/bmw-630d-gt-630d-gt-2018-0.jpg" alt="BMW 630d GT">
+          </div>
+          <div class="p-3">
+            <div class="title">BMW 630d GT M Sport</div>
+            <div class="spec"><span><i class="bi bi-calendar3"></i> 2018</span><span><i class="bi bi-speedometer2"></i> 68,000 กม.</span><span><i class="bi bi-fuel-pump"></i> ดีเซล</span></div>
+            <div class="price">1,290,000 ฿</div>
+            <div class="install mb-2">ผ่อนเริ่ม 17,700 บาท/เดือน</div>
+            <button class="btn btn-view w-100 btn-sm py-2">ดูรายละเอียด</button>
+          </div>
+        </div>
+      </div>
+      <!-- card 5 -->
+      <div class="col-6 col-lg-3">
+        <div class="car-card">
+          <div class="ph">
+            <button class="fav"><i class="bi bi-heart"></i></button>
+            <img src="media/vehicles/honda-city-15rs-ehev-15rs-ehev-2022-0.jpg" alt="Honda City">
+          </div>
+          <div class="p-3">
+            <div class="title">Honda City 1.5 RS e:HEV</div>
+            <div class="spec"><span><i class="bi bi-calendar3"></i> 2022</span><span><i class="bi bi-speedometer2"></i> 45,000 กม.</span><span><i class="bi bi-fuel-pump"></i> ไฮบริด</span></div>
+            <div class="price">699,000 ฿</div>
+            <div class="install mb-2">ผ่อนเริ่ม 9,600 บาท/เดือน</div>
+            <button class="btn btn-view w-100 btn-sm py-2">ดูรายละเอียด</button>
+          </div>
+        </div>
+      </div>
+      <!-- card 6 -->
+      <div class="col-6 col-lg-3">
+        <div class="car-card">
+          <div class="ph">
+            <span class="tag hot"><i class="bi bi-fire"></i> ขายดี</span>
+            <button class="fav"><i class="bi bi-heart"></i></button>
+            <img src="media/vehicles/isuzu-mux-19-ultimate-2wd-19-ultimate-2022-0.jpg" alt="Isuzu MU-X">
+          </div>
+          <div class="p-3">
+            <div class="title">Isuzu MU-X 1.9 Ultimate 2WD</div>
+            <div class="spec"><span><i class="bi bi-calendar3"></i> 2022</span><span><i class="bi bi-speedometer2"></i> 52,000 กม.</span><span><i class="bi bi-fuel-pump"></i> ดีเซล</span></div>
+            <div class="price">989,000 ฿</div>
+            <div class="install mb-2">ผ่อนเริ่ม 13,600 บาท/เดือน</div>
+            <button class="btn btn-view w-100 btn-sm py-2">ดูรายละเอียด</button>
+          </div>
+        </div>
+      </div>
+      <!-- card 7 -->
+      <div class="col-6 col-lg-3">
+        <div class="car-card">
+          <div class="ph">
+            <button class="fav"><i class="bi bi-heart"></i></button>
+            <img src="media/vehicles/mazda-2-13s-leather-sports-13s-leather-sports-2022-0.jpg" alt="Mazda 2">
+          </div>
+          <div class="p-3">
+            <div class="title">Mazda 2 1.3 S Leather Sports</div>
+            <div class="spec"><span><i class="bi bi-calendar3"></i> 2022</span><span><i class="bi bi-speedometer2"></i> 29,000 กม.</span><span><i class="bi bi-fuel-pump"></i> เบนซิน</span></div>
+            <div class="price">519,000 ฿</div>
+            <div class="install mb-2">ผ่อนเริ่ม 7,100 บาท/เดือน</div>
+            <button class="btn btn-view w-100 btn-sm py-2">ดูรายละเอียด</button>
+          </div>
+        </div>
+      </div>
+      <!-- card 8 -->
+      <div class="col-6 col-lg-3">
+        <div class="car-card">
+          <div class="ph">
+            <span class="tag"><i class="bi bi-star-fill"></i> รุ่นท็อป</span>
+            <button class="fav"><i class="bi bi-heart"></i></button>
+            <img src="media/vehicles/honda-accord-15-turbo-el-15-turbo-el-2019-0.jpg" alt="Honda Accord">
+          </div>
+          <div class="p-3">
+            <div class="title">Honda Accord 1.5 Turbo EL</div>
+            <div class="spec"><span><i class="bi bi-calendar3"></i> 2019</span><span><i class="bi bi-speedometer2"></i> 76,000 กม.</span><span><i class="bi bi-fuel-pump"></i> เบนซิน</span></div>
+            <div class="price">829,000 ฿</div>
+            <div class="install mb-2">ผ่อนเริ่ม 11,400 บาท/เดือน</div>
+            <button class="btn btn-view w-100 btn-sm py-2">ดูรายละเอียด</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== STATS / CREDIBILITY BAND ===================== -->
+<!-- 👉 แก้ตัวเลขจริงได้ที่ data-target ของแต่ละช่อง (ปี / คันที่ขายแล้ว ฯลฯ) -->
+<section class="section-sm">
+  <div class="container">
+    <div class="stats-band p-4 p-lg-5">
+      <div class="text-center mb-2 position-relative" style="z-index:2">
+        <div class="eyebrow" style="color:#e9d5ff">ตัวเลขที่การันตีความไว้ใจ</div>
+        <h2 class="mt-1" style="font-size:1.8rem">ทำไมลูกค้าถึงเลือก <span class="text-gold">Oxlet Auto</span></h2>
+      </div>
+      <div class="row align-items-center mt-2">
+        <div class="col-6 col-md stat-sep">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-award-fill"></i></span>
+            <div class="num"><span class="counter" data-target="12">0</span><span class="suffix">+</span></div>
+            <div class="lbl">ปีแห่งประสบการณ์</div></div>
+        </div>
+        <div class="col-6 col-md stat-sep">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-car-front-fill"></i></span>
+            <div class="num"><span class="counter" data-target="3500">0</span><span class="suffix">+</span></div>
+            <div class="lbl">คันที่ส่งมอบแล้ว</div></div>
+        </div>
+        <div class="col-6 col-md stat-sep">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-clipboard2-check-fill"></i></span>
+            <div class="num"><span class="counter" data-target="109">0</span><span class="suffix">+</span></div>
+            <div class="lbl">รถพร้อมส่งในสต็อก</div></div>
+        </div>
+        <div class="col-6 col-md stat-sep">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-star-fill"></i></span>
+            <div class="num"><span class="counter" data-target="4.9" data-decimals="1">0</span></div>
+            <div class="lbl">คะแนนรีวิว Google</div></div>
+        </div>
+        <div class="col-6 col-md">
+          <div class="stat-cell"><span class="ic"><i class="bi bi-geo-alt-fill"></i></span>
+            <div class="num"><span class="counter" data-target="3">0</span></div>
+            <div class="lbl">สาขาพร้อมศูนย์บริการ</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WHY OXLET ===================== -->
+<section class="section" id="why">
+  <div class="container">
+    <div class="why">
+      <div class="row g-0">
+        <div class="col-lg-5 d-none d-lg-block">
+          <img class="why-photo" src="media/branch_photos/1-2.jpg" alt="โชว์รูม Oxlet">
+        </div>
+        <div class="col-lg-7 p-4 p-lg-5">
+          <div class="eyebrow" style="color:#e9d5ff">ทำไมต้อง Oxlet Auto</div>
+          <h2 class="mt-1 mb-2" style="font-size:1.9rem">โชว์รูมรถมือสอง<span class="text-gold">พร้อมศูนย์บริการ เจ้าแรกของไทย</span></h2>
+          <p style="color:#d6c6f2" class="mb-4">เราไม่ใช่แค่เต็นท์รถ แต่เป็นโชว์รูมมาตรฐานที่มีศูนย์ซ่อมบำรุงในตัว ดูแลคุณตั้งแต่วันเลือกซื้อจนตลอดการใช้งาน</p>
+          <div class="row">
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-patch-check"></i></div><div><strong>คัด & ตรวจทุกคัน</strong><p>ตรวจสภาพเต็มระบบก่อนขึ้นโชว์ รถตรงปก ไม่มีประวัติซ่อนเร้น</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-shield-check"></i></div><div><strong>รับประกัน 1 ปี</strong><p>รับประกันเครื่องยนต์และเกียร์ พร้อมบริการหลังการขาย</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-tools"></i></div><div><strong>ศูนย์บริการในตัว</strong><p>เปลี่ยนถ่ายน้ำมัน แบตเตอรี่ ไส้กรอง ครบจบในที่เดียว</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-bank"></i></div><div><strong>ไฟแนนซ์ทุกธนาคาร</strong><p>ดอกเบี้ยเริ่ม 2.79% ฟรีดาวน์ อนุมัติไว จัดเต็มวงเงิน</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-truck"></i></div><div><strong>ส่งถึงบ้านทั่วไทย</strong><p>เลือกรถออนไลน์ ส่งมอบถึงหน้าบ้านคุณทุกจังหวัด</p></div></div></div>
+            <div class="col-md-6"><div class="w-item"><div class="w-ico"><i class="bi bi-headset"></i></div><div><strong>ทีมช่วยเหลือ 24 ชม.</strong><p>มีปัญหาเมื่อไหร่ โทรหาเราได้ตลอด อุ่นใจทุกการเดินทาง</p></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== OWNER / FOUNDER ===================== -->
+<!-- 👉 แก้ชื่อเจ้าของ / คำพูด / และใส่รูปจริงแทน placeholder (ดูคอมเมนต์ในบล็อกรูป) -->
+<section class="section" id="owner">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5">
+        <div class="owner-photo">
+          <!-- แทนที่ด้วยรูปเจ้าของจริง เช่น: <img src="media/owner.jpg" alt="เจ้าของ Oxlet Auto"> -->
+          <div class="ph-note"><i class="bi bi-person-bounding-box"></i><div class="mt-2 small">ใส่รูปเจ้าของตรงนี้</div></div>
+          <div class="owner-badge"><b>คุณ[ชื่อเจ้าของ]</b><span>ผู้ก่อตั้ง &amp; กรรมการผู้จัดการ</span></div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="eyebrow">รู้จักผู้ก่อตั้ง</div>
+        <h2 class="sec-title mt-1">เบื้องหลัง <span class="u">Oxlet Auto</span></h2>
+        <div class="divider"></div>
+        <p class="owner-quote mt-3 mb-4"><span class="mark">“</span>ผมอยากให้คนไทยซื้อรถมือสองได้อย่างสบายใจเหมือนออกรถป้ายแดง — รถทุกคันต้องตรวจจริง รับประกันจริง และมีศูนย์บริการดูแลกันยาวๆ ไม่ใช่ขายแล้วจบ<span class="mark">”</span></p>
+        <p class="text-muted mb-4">จากความตั้งใจนี้ Oxlet Auto จึงกลายเป็นโชว์รูมรถมือสองที่มี “ศูนย์บริการในตัว” เจ้าแรกของไทย ดูแลลูกค้าตั้งแต่วันเลือกซื้อ จนตลอดอายุการใช้งาน ด้วยทีมงานมืออาชีพกว่า [XX] คนใน 3 สาขา</p>
+        <div class="sign mb-3">— คุณ[ชื่อเจ้าของ]</div>
+
+        <!-- ทีมงานแบบไม่ใช้รูปหน้า (เลี่ยง PDPA) — สื่อด้วยหน้าที่ + จำนวน -->
+        <div class="row g-3">
+          <div class="col-sm-4"><div class="team-role"><i class="bi bi-person-badge"></i><div><b>ทีมที่ปรึกษาการขาย</b><span>แนะนำรถตรงงบ ไม่กดดัน</span></div></div></div>
+          <div class="col-sm-4"><div class="team-role"><i class="bi bi-wrench-adjustable"></i><div><b>ช่างศูนย์บริการ</b><span>ตรวจ–ซ่อม–ดูแลหลังการขาย</span></div></div></div>
+          <div class="col-sm-4"><div class="team-role"><i class="bi bi-cash-coin"></i><div><b>ทีมไฟแนนซ์</b><span>จัดสินเชื่อทุกธนาคาร</span></div></div></div>
+        </div>
+        <p class="small text-muted mt-3 mb-0"><i class="bi bi-people-fill text-ox me-1"></i> ทีมงานมืออาชีพกว่า <b>[XX] คน</b> ใน 3 สาขา พร้อมดูแลคุณ</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SERVICES ===================== -->
+<section class="section-sm" id="services">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="eyebrow">ครบจบในที่เดียว</div>
+      <h2 class="sec-title mt-1">บริการ<span class="u">ของเรา</span></h2>
+      <div class="divider mx-auto"></div>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="svc text-center">
+          <div class="s-ico mx-auto"><i class="bi bi-car-front-fill"></i></div>
+          <h5>ขายรถมือสอง</h5>
+          <ul class="text-start mt-2">
+            <li>รถคัดคุณภาพ 109+ คัน</li>
+            <li>ตรวจสภาพเต็มระบบ</li>
+            <li>รับประกันเครื่อง+เกียร์</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="svc text-center">
+          <div class="s-ico mx-auto"><i class="bi bi-arrow-left-right"></i></div>
+          <h5>รับซื้อ – เทิร์นรถ</h5>
+          <ul class="text-start mt-2">
+            <li>ประเมินราคาให้สูง</li>
+            <li>รับเงินไว ปิดไฟแนนซ์ให้</li>
+            <li>เทิร์นรถเก่าแลกคันใหม่</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="svc text-center">
+          <div class="s-ico mx-auto"><i class="bi bi-cash-coin"></i></div>
+          <h5>จัดไฟแนนซ์</h5>
+          <ul class="text-start mt-2">
+            <li>ดอกเบี้ยเริ่ม 2.79%</li>
+            <li>ทุกธนาคาร ฟรีดาวน์</li>
+            <li>อนุมัติไว รู้ผลใน 1 วัน</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="svc text-center">
+          <div class="s-ico mx-auto"><i class="bi bi-wrench-adjustable-circle"></i></div>
+          <h5>บริการหลังการขาย</h5>
+          <ul class="text-start mt-2">
+            <li>ศูนย์บริการในตัว</li>
+            <li>Car Spa ฟรี</li>
+            <li>ช่วยเหลือ 24 ชม.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PROMO ===================== -->
+<section class="section-sm">
+  <div class="container">
+    <div class="promo p-4 p-lg-5">
+      <div class="row align-items-center g-4 position-relative">
+        <div class="col-lg-8">
+          <span class="badge bg-warning text-dark mb-2 px-3 py-2">โปรโมชันเดือนนี้</span>
+          <div class="big mb-2">ออกรถ 0 บาท · ฟรีประกันชั้น 1</div>
+          <p class="mb-0" style="color:#ecdefb">ดอกเบี้ยพิเศษเริ่มต้น 2.79% รับฟรี! ชุดของแถมจัดเต็ม + Car Spa มูลค่ากว่า 15,000 บาท เมื่อออกรถภายในเดือนนี้</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <a href="#" class="btn btn-gold btn-lg px-4 me-2 mb-2"><i class="bi bi-line me-1"></i> รับโปรทาง LINE</a>
+          <a href="tel:0978218888" class="btn btn-ghost btn-lg px-4 mb-2"><i class="bi bi-telephone-fill me-1"></i> โทรเลย</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== REVIEWS ===================== -->
+<section class="section-sm bg-ox-light" id="reviews">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="eyebrow">ลูกค้าตัวจริง</div>
+      <h2 class="sec-title mt-1">เสียงจาก<span class="u">ลูกค้าของเรา</span></h2>
+      <div class="divider mx-auto"></div>
+      <div class="mt-2"><span class="text-gold fs-5">★★★★★</span> <span class="fw-semibold">4.9/5</span> <span class="text-muted">จากรีวิว Google กว่า 500 รายการ</span></div>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="rev-card">
+          <div class="stars mb-2">★★★★★</div>
+          <p class="quote">"บริการดีมากค่ะ รถตรงปกทุกอย่าง มีศูนย์ซ่อมให้ด้วย อุ่นใจกว่าเต็นท์ทั่วไปเยอะ จัดไฟแนนซ์ผ่านง่ายมาก"</p>
+          <div class="who"><div class="av">ก</div><div><strong>คุณกนกวรรณ</strong><div class="small text-muted">Honda City e:HEV</div></div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="rev-card">
+          <div class="stars mb-2">★★★★★</div>
+          <p class="quote">"ออกรถ CR-V ครับ พนักงานให้ข้อมูลครบ ไม่กดดัน ส่งรถถึงบ้านเลย ประทับใจเรื่องการรับประกัน 1 ปีมาก"</p>
+          <div class="who"><div class="av">ธ</div><div><strong>คุณธนพล</strong><div class="small text-muted">Honda CR-V e:HEV RS</div></div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="rev-card">
+          <div class="stars mb-2">★★★★★</div>
+          <p class="quote">"เทิร์นรถเก่าแล้วออกคันใหม่ ประเมินราคาให้ดีกว่าที่อื่น ทำเรื่องเร็ว ได้รถสวยราคาโอเคมากครับ"</p>
+          <div class="who"><div class="av">ว</div><div><strong>คุณวิชัย</strong><div class="small text-muted">Ford Everest Titanium</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-4"><a href="#" class="btn btn-ox px-4">ดูรีวิวทั้งหมด <i class="bi bi-arrow-right ms-1"></i></a></div>
+  </div>
+</section>
+
+<!-- ===================== BRANCHES ===================== -->
+<section class="section-sm" id="branches">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="eyebrow">มาเยี่ยมชมเราได้</div>
+      <h2 class="sec-title mt-1">สาขา<span class="u">ของเรา</span></h2>
+      <div class="divider mx-auto"></div>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="branch">
+          <img class="b-ph" src="media/branch_photos/1-0.jpg" alt="สาขาบ้านเก่า ชลบุรี">
+          <div class="b-body">
+            <h5 class="text-ox">สาขาบ้านเก่า (ชลบุรี)</h5>
+            <p class="small text-muted mb-2"><i class="bi bi-geo-alt-fill text-ox"></i> 168 หมู่ 2 ต.บ้านเก่า อ.พานทอง จ.ชลบุรี</p>
+            <a href="https://maps.app.goo.gl/WCeX2JHXfi4t7PHK6" class="btn btn-sm btn-view w-100">🗺️ ดูแผนที่</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="branch">
+          <img class="b-ph" src="media/branch_photos/2-0.jpg" alt="สาขาแพรกษา สมุทรปราการ">
+          <div class="b-body">
+            <h5 class="text-ox">สาขาแพรกษา (สมุทรปราการ)</h5>
+            <p class="small text-muted mb-2"><i class="bi bi-geo-alt-fill text-ox"></i> 185/5 ต.แพรกษา อ.เมือง จ.สมุทรปราการ</p>
+            <a href="#" class="btn btn-sm btn-view w-100">🗺️ ดูแผนที่</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="branch">
+          <img class="b-ph" src="media/branch_photos/1-4.jpg" alt="สำนักงานใหญ่ บางนา">
+          <div class="b-body">
+            <h5 class="text-ox">สำนักงานใหญ่ (บางนา)</h5>
+            <p class="small text-muted mb-2"><i class="bi bi-geo-alt-fill text-ox"></i> 4 ซ.ลาซาล 23 บางนา กรุงเทพฯ</p>
+            <a href="#" class="btn btn-sm btn-view w-100">🗺️ ดูแผนที่</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CTA BAND ===================== -->
+<section class="section-sm">
+  <div class="container">
+    <div class="cta-band text-center">
+      <h2 class="mb-2" style="font-size:2rem">พร้อมออกรถคันใหม่แล้วหรือยัง?</h2>
+      <p class="mb-4" style="color:#e6d8fb">ปรึกษาทีมงานฟรี ไม่มีค่าใช้จ่าย เลือกรถที่ใช่ในงบที่ใช่ พร้อมส่งถึงบ้าน</p>
+      <a href="#" class="btn btn-gold btn-lg px-4 me-2 mb-2"><i class="bi bi-line me-1"></i> แชทเลย @oxletauto</a>
+      <a href="tel:0978218888" class="btn btn-ghost btn-lg px-4 mb-2"><i class="bi bi-telephone-fill me-1"></i> 097-821-8888</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="pt-5 pb-4 mt-4">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="brand-logo" style="color:#fff;font-family:'Prompt';font-weight:800;font-size:1.5rem">OXLET AUTO</div>
+        <p class="small mt-2" style="color:#b9a8e0">รถมือสองคุณภาพมาตรฐาน พร้อมศูนย์บริการครบวงจร เจ้าแรกของไทย — คัดทุกคัน รับประกัน ดูแลตลอดการใช้งาน</p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="https://www.facebook.com/oxlet.bankao" class="soc"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="soc"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="soc"><i class="bi bi-youtube"></i></a>
+          <a href="#" class="soc"><i class="bi bi-tiktok"></i></a>
+          <a href="#" class="soc"><i class="bi bi-line"></i></a>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="f-title">เมนู</div>
+        <div class="d-flex flex-column gap-2 small">
+          <a href="#cars">ค้นหารถ</a>
+          <a href="#category">ประเภทรถ</a>
+          <a href="#services">บริการ</a>
+          <a href="#reviews">รีวิวลูกค้า</a>
+          <a href="#branches">สาขา</a>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="f-title">ติดต่อเรา</div>
+        <p class="small mb-2" style="color:#c9b8ec"><i class="bi bi-telephone-fill me-1"></i> 097-821-8888</p>
+        <p class="small mb-2" style="color:#c9b8ec"><i class="bi bi-line me-1"></i> @oxletauto</p>
+        <p class="small mb-0" style="color:#c9b8ec"><i class="bi bi-clock me-1"></i> เปิดทุกวัน 08:30 – 16:30 น.</p>
+      </div>
+      <div class="col-lg-3">
+        <div class="f-title">สาขา</div>
+        <p class="small mb-2" style="color:#c9b8ec"><i class="bi bi-geo-alt-fill me-1"></i> บ้านเก่า ชลบุรี</p>
+        <p class="small mb-2" style="color:#c9b8ec"><i class="bi bi-geo-alt-fill me-1"></i> แพรกษา สมุทรปราการ</p>
+        <p class="small mb-0" style="color:#c9b8ec"><i class="bi bi-geo-alt-fill me-1"></i> บางนา กรุงเทพฯ (สำนักงานใหญ่)</p>
+      </div>
+    </div>
+    <hr class="mt-4" style="border-color:rgba(255,255,255,.15)">
+    <p class="text-center small mb-0" style="color:#a596cf">© 2026 Oxlet Auto. สงวนลิขสิทธิ์ · รถมือสองคุณภาพมาตรฐาน พร้อมศูนย์บริการ</p>
+  </div>
+</footer>
+
+<a href="#" class="float-line"><i class="bi bi-line fs-5"></i> แชทเลย</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// นับเลขวิ่งเมื่อเลื่อนถึงแถบสถิติ
+(function(){
+  function run(el){
+    var target = parseFloat(el.dataset.target),
+        dec = parseInt(el.dataset.decimals||0), start = null, dur = 1500;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts-start)/dur, 1),
+          val = (target*(0.5-Math.cos(Math.PI*p)/2)); // ease-in-out
+      el.textContent = dec ? val.toFixed(dec) : Math.round(val).toLocaleString('en-US');
+      if(p<1) requestAnimationFrame(step);
+      else el.textContent = dec ? target.toFixed(dec) : target.toLocaleString('en-US');
+    }
+    requestAnimationFrame(step);
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ run(e.target); io.unobserve(e.target); }
+    });
+  }, {threshold:.4});
+  document.querySelectorAll('.counter').forEach(function(c){ io.observe(c); });
+})();
+</script>
+</body>
+</html>

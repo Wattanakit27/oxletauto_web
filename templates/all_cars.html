@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}ค้นหารถทั้งหมด — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="text-ox mb-3">ค้นหารถทั้งหมด <small class="text-muted fs-6">({{ total }} คัน)</small></h3>
+  <div class="row g-4">
+
+    <!-- ฟิลเตอร์ -->
+    <div class="col-lg-3">
+      <form method="get" class="card border-0 shadow-sm p-3">
+        <h6 class="text-ox">ตัวกรอง</h6>
+        <input name="q" value="{{ current.q }}" class="form-control form-control-sm mb-2" placeholder="ค้นหา...">
+
+        <label class="form-label small mb-1">ยี่ห้อ</label>
+        <select name="brand" class="form-select form-select-sm mb-2">
+          <option value="">ทั้งหมด</option>
+          {% for b in brands %}<option value="{{ b.slug }}" {% if current.brand == b.slug %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+        </select>
+
+        <label class="form-label small mb-1">ประเภท</label>
+        <select name="type" class="form-select form-select-sm mb-2">
+          <option value="">ทั้งหมด</option>
+          {% for t in car_types %}<option value="{{ t.slug }}" {% if current.type == t.slug %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+        </select>
+
+        <label class="form-label small mb-1">ช่วงราคา</label>
+        <select name="price" class="form-select form-select-sm mb-2">
+          <option value="">ทั้งหมด</option>
+          {% for key,label,lo,hi in price_ranges %}<option value="{{ key }}" {% if current.price == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+
+        <label class="form-label small mb-1">เกียร์</label>
+        <select name="transmission" class="form-select form-select-sm mb-2">
+          <option value="">ทั้งหมด</option>
+          {% for v,label in transmissions %}<option value="{{ v }}" {% if current.transmission == v %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+
+        <label class="form-label small mb-1">ขับเคลื่อน</label>
+        <select name="drivetrain" class="form-select form-select-sm mb-3">
+          <option value="">ทั้งหมด</option>
+          {% for v,label in drivetrains %}<option value="{{ v }}" {% if current.drivetrain == v %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+
+        <button class="btn btn-ox btn-sm">กรอง</button>
+        <a href="{% url 'all_cars' %}" class="btn btn-link btn-sm">ล้างตัวกรอง</a>
+      </form>
+    </div>
+
+    <!-- รายการรถ -->
+    <div class="col-lg-9">
+      <form method="get" class="d-flex justify-content-end mb-3">
+        {% for k,v in current.items %}{% if k != 'sort' and k != 'page' %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endif %}{% endfor %}
+        <select name="sort" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+          {% for v,label in sort_options %}<option value="{{ v }}" {% if current.sort == v %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </form>
+
+      <div class="row g-3">
+        {% for car in page %}<div class="col-6 col-md-4">{% include "_car_card.html" %}</div>
+        {% empty %}<div class="col-12"><div class="alert alert-light border">ไม่พบรถตามเงื่อนไข</div></div>{% endfor %}
+      </div>
+
+      {% if page.paginator.num_pages > 1 %}
+      <nav class="mt-4"><ul class="pagination justify-content-center">
+        {% if page.has_previous %}<li class="page-item"><a class="page-link" href="?{{ querystring }}&page={{ page.previous_page_number }}">‹</a></li>{% endif %}
+        {% for n in page.paginator.page_range %}
+          <li class="page-item {% if n == page.number %}active{% endif %}"><a class="page-link" href="?{{ querystring }}&page={{ n }}">{{ n }}</a></li>
+        {% endfor %}
+        {% if page.has_next %}<li class="page-item"><a class="page-link" href="?{{ querystring }}&page={{ page.next_page_number }}">›</a></li>{% endif %}
+      </ul></nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

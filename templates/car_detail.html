@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load humanize static %}
+{% block title %}{{ car.title }} — {{ SITE_NAME }}{% endblock %}
+{% block head %}
+<style>
+  .gallery-thumb{ opacity:.65; transition:.15s; border:2px solid transparent; }
+  .gallery-thumb:hover{ opacity:1; }
+  .gallery-thumb.active{ opacity:1; border-color:var(--ox); }
+  #lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:2000; display:none;
+             align-items:center; justify-content:center; cursor:zoom-out; }
+  #lightbox img{ max-width:92%; max-height:92%; border-radius:6px; }
+  #lightbox .lb-close{ position:absolute; top:18px; right:26px; color:#fff; font-size:2.2rem; cursor:pointer; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+  {% if request.user.is_staff %}
+  <div class="alert alert-warning d-flex align-items-center gap-2 py-2">
+    <span class="me-auto"><i class="bi bi-shield-lock-fill"></i> <strong>โหมดแอดมิน</strong></span>
+    <a href="{% url 'car_edit' car.slug %}" class="btn btn-sm btn-dark">✏️ แก้ไขรถคันนี้</a>
+    <form method="post" action="{% url 'car_delete' car.slug %}" onsubmit="return confirm('ลบรถคันนี้ถาวร? ลบแล้วกู้คืนไม่ได้')">
+      {% csrf_token %}
+      <button class="btn btn-sm btn-outline-danger">🗑️ ลบ</button>
+    </form>
+  </div>
+  {% endif %}
+  <nav class="small mb-3"><a href="{% url 'all_cars' %}">ค้นหารถ</a> / {{ car.title }}</nav>
+  <div class="row g-4">
+
+    <!-- แกลเลอรี -->
+    <div class="col-lg-7">
+      {% with cover=car.cover_image %}
+      <img id="mainImg" src="{% if cover %}{{ cover.url }}{% else %}{% static 'img/oxlet-logo.png' %}{% endif %}"
+           class="img-fluid rounded shadow-sm w-100"
+           style="max-height:420px;object-fit:{% if cover %}cover{% else %}contain;background:#efeaf5;padding:2rem{% endif %};cursor:zoom-in"
+           onclick="if(this.dataset.full){openLightbox(this.dataset.full||this.src)}"
+           data-full="{% if cover %}{{ cover.url }}{% endif %}">
+      {% endwith %}
+      {% if car.images.count > 1 %}
+      <div class="row g-2 mt-2">
+        {% for img in car.images.all %}
+        <div class="col-3">
+          <img src="{{ img.image.url }}"
+               class="img-fluid rounded gallery-thumb{% if forloop.first %} active{% endif %}"
+               style="height:80px;object-fit:cover;width:100%;cursor:pointer"
+               onclick="selectThumb(this)">
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ราคา + CTA -->
+    <div class="col-lg-5">
+      <h4 class="text-ox">{{ car.title }}</h4>
+      <div class="price fs-3">{{ car.price|intcomma }} บาท</div>
+      {% if car.installment_min %}<div class="installment mb-2">ผ่อนเริ่ม {{ car.installment_min|intcomma }} บาท/เดือน · ดอกเบี้ย {{ car.interest_rate }}%</div>{% endif %}
+      <ul class="list-unstyled small text-muted">
+        <li>✓ รับประกัน {{ car.warranty }}</li>
+        <li>✓ ตรวจสภาพก่อนส่งมอบ {{ car.inspection_points }}+ จุด</li>
+        <li>✓ คืนเงินใน 7 วันถ้าไม่พอใจ</li>
+        <li>✓ จัดไฟแนนซ์ได้ทุกธนาคาร</li>
+      </ul>
+      <div class="d-grid gap-2">
+        {% if car.status == 'available' %}
+        <a href="{% url 'book_car' car.slug %}" class="btn btn-warning fw-semibold"><i class="bi bi-bookmark-check-fill"></i> จองรถออนไลน์ · มัดจำกันคัน <span class="badge bg-dark ms-1">เดโม</span></a>
+        <div class="text-center small text-success mb-1"><i class="bi bi-shield-check"></i> จองในเว็บรับโปรพิเศษ · ไฟแนนซ์ไม่ผ่าน คืนมัดจำเต็มจำนวน</div>
+        {% elif car.status == 'reserved' %}
+        <button class="btn btn-secondary" disabled><i class="bi bi-lock-fill"></i> รถคันนี้ถูกจองแล้ว</button>
+        {% endif %}
+        <a href="tel:{{ SITE_PHONE }}" class="btn btn-ox"><i class="bi bi-telephone-fill"></i> โทร {{ SITE_PHONE }}</a>
+        <a href="{{ line_url }}" target="_blank" rel="noopener" class="btn btn-success"><i class="bi bi-line"></i> สอบถามทาง LINE</a>
+      </div>
+
+      <!-- ฟอร์มขอราคา -->
+      <div class="card border-0 shadow-sm mt-3"><div class="card-body">
+        <h6 class="text-ox">ขอราคาพิเศษ / นัดดูรถ</h6>
+        <form method="post" action="{% url 'lead_submit' %}">{% csrf_token %}
+          <input type="hidden" name="vehicle" value="{{ car.slug }}">
+          <input type="hidden" name="source_page" value="car_detail">
+          <input name="name" class="form-control form-control-sm mb-2" placeholder="ชื่อ" required>
+          <input name="phone" class="form-control form-control-sm mb-2" placeholder="เบอร์โทร" required>
+          <input name="email" class="form-control form-control-sm mb-2" placeholder="อีเมล (ถ้ามี)">
+          <button class="btn btn-ox btn-sm w-100">ขอราคา</button>
+        </form>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- สเปก -->
+  <div class="row mt-4">
+    <div class="col-lg-7">
+      <h5 class="text-ox">ข้อมูลรถ</h5>
+      <table class="table table-sm">
+        <tr><th class="text-muted" style="width:40%">ยี่ห้อ</th><td>{{ car.brand.name }}</td></tr>
+        <tr><th class="text-muted">รุ่น / รุ่นย่อย</th><td>{{ car.model }} {{ car.submodel }}</td></tr>
+        <tr><th class="text-muted">ปี</th><td>{{ car.year }}</td></tr>
+        <tr><th class="text-muted">ประเภท</th><td>{{ car.car_type.name|default:"-" }}</td></tr>
+        <tr><th class="text-muted">เกียร์</th><td>{{ car.get_transmission_display }}</td></tr>
+        <tr><th class="text-muted">เลขไมล์</th><td>{{ car.mileage|intcomma }} กม.</td></tr>
+        <tr><th class="text-muted">เชื้อเพลิง</th><td>{{ car.get_fuel_display }}</td></tr>
+        <tr><th class="text-muted">เครื่องยนต์</th><td>{{ car.engine_cc|intcomma }} cc</td></tr>
+        <tr><th class="text-muted">ขับเคลื่อน</th><td>{{ car.get_drivetrain_display }}</td></tr>
+        <tr><th class="text-muted">สีภายนอก / ใน</th><td>{{ car.color_exterior }} / {{ car.color_interior }}</td></tr>
+        <tr><th class="text-muted">สาขา</th><td>{{ car.branch.name|default:"-" }}</td></tr>
+      </table>
+      {% if car.description %}<p class="text-muted">{{ car.description|linebreaksbr }}</p>{% endif %}
+    </div>
+    <div class="col-lg-5">
+      <h5 class="text-ox">อุปกรณ์/ออปชัน</h5>
+      <div class="d-flex flex-wrap gap-2">
+        {% for o in car.options.all %}<span class="badge bg-light text-dark border">{{ o.name }}</span>
+        {% empty %}<span class="text-muted small">-</span>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% if related %}
+  <h5 class="text-ox mt-5">รถที่เกี่ยวข้อง</h5>
+  <div class="row g-3">
+    {% for car in related %}<div class="col-6 col-md-3">{% include "_car_card.html" %}</div>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Lightbox ขยายรูปเต็มจอ -->
+<div id="lightbox" onclick="this.style.display='none'">
+  <span class="lb-close">&times;</span>
+  <img id="lightboxImg" src="" alt="">
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function selectThumb(el){
+    var main=document.getElementById('mainImg');
+    main.src=el.src; main.dataset.full=el.src;
+    document.querySelectorAll('.gallery-thumb').forEach(function(t){t.classList.remove('active');});
+    el.classList.add('active');
+  }
+  function openLightbox(src){
+    document.getElementById('lightboxImg').src=src;
+    document.getElementById('lightbox').style.display='flex';
+  }
+</script>
+{% endblock %}

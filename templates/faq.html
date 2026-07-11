@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}คำถามที่พบบ่อย — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-3">
+    <h3 class="text-ox mb-0">คำถามที่พบบ่อย (FAQ)</h3>
+    {% if request.user.is_staff %}<a href="{% url 'faq_add' %}" class="btn btn-success btn-sm ms-auto">➕ เพิ่มคำถาม</a>{% endif %}
+  </div>
+  <div class="accordion" id="faq">
+    {% for faq in faqs %}
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f{{ faq.pk }}">{{ faq.question }}</button>
+      </h2>
+      <div id="f{{ faq.pk }}" class="accordion-collapse collapse" data-bs-parent="#faq">
+        <div class="accordion-body">
+          {{ faq.answer|linebreaksbr }}
+          {% if request.user.is_staff %}
+          <div class="d-flex gap-1 mt-3 pt-2 border-top">
+            <a href="{% url 'faq_edit' faq.pk %}" class="btn btn-sm btn-dark">✏️ แก้ไข</a>
+            <form method="post" action="{% url 'faq_delete' faq.pk %}" onsubmit="return confirm('ลบคำถามนี้?')">{% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">🗑️ ลบ</button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}<p class="text-muted">ยังไม่มีคำถาม</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

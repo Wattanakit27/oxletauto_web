@@ -1,0 +1,245 @@
+// ==========================================================================
+// Oxlet Auto — Database Schema (DBML สำหรับ dbdiagram.io)
+// สร้างจากโมเดล Django แอป `cars` (17 ตาราง)
+// ชื่อตารางจริงใน DB จะมี prefix "cars_" เช่น Vehicle -> cars_vehicle
+// PK ทุกตารางเป็น bigint auto-increment (DEFAULT_AUTO_FIELD = BigAutoField)
+// ==========================================================================
+
+Project oxlet_auto {
+  database_type: 'SQLite (dev) / PostgreSQL (prod)'
+  Note: 'เว็บโชว์รูมรถมือสอง — สลับ SQLite/Postgres ด้วย env DB_HOST'
+}
+
+Table Brand {
+  id bigint [pk, increment]
+  name varchar(60) [unique, not null]
+  slug varchar(80) [unique]
+  logo varchar(100) [null, note: 'ImageField (path)']
+  order int [default: 0]
+  Note: 'ยี่ห้อรถ'
+}
+
+Table CarType {
+  id bigint [pk, increment]
+  name varchar(60) [unique, not null]
+  slug varchar(80) [unique]
+  order int [default: 0]
+  Note: 'ประเภทตัวถัง (เก๋ง/กระบะ/SUV)'
+}
+
+Table Branch {
+  id bigint [pk, increment]
+  name varchar(80) [not null]
+  address text
+  phone varchar(40)
+  hours varchar(80) [default: '08:30 - 16:30']
+  map_url varchar(200)
+  google_place_id varchar(200)
+  google_maps_url varchar(200)
+  google_rating decimal(2,1) [null]
+  google_reviews_count int [default: 0]
+  lat float [null]
+  lng float [null]
+  Note: 'สาขา + ข้อมูล Google Places'
+}
+
+Table Vehicle {
+  id bigint [pk, increment]
+  slug varchar(200) [unique]
+  brand_id bigint [not null, note: 'FK Brand (PROTECT)']
+  model varchar(80) [not null]
+  submodel varchar(120)
+  plate varchar(20)
+  year int [not null]
+  car_type_id bigint [null, note: 'FK CarType (SET_NULL)']
+  transmission varchar(10) [default: 'auto']
+  drivetrain varchar(10) [default: '2wd']
+  fuel varchar(10) [default: 'petrol']
+  engine_cc int [default: 0]
+  mileage int [default: 0]
+  color_exterior varchar(40)
+  color_interior varchar(40)
+  price int [default: 0]
+  installment_min int [default: 0]
+  interest_rate decimal(4,2) [default: 2.79]
+  condition varchar(12) [default: 'certified']
+  status varchar(12) [default: 'available']
+  branch_id bigint [null, note: 'FK Branch (SET_NULL)']
+  warranty varchar(120)
+  inspection_points int [default: 150]
+  description text
+  is_featured boolean [default: false]
+  created_at datetime
+  updated_at datetime
+  deleted_at datetime [null, note: 'soft-delete (ถังขยะ 30 วัน)']
+  Note: 'รถที่ลงประกาศ'
+}
+
+Table VehicleImage {
+  id bigint [pk, increment]
+  vehicle_id bigint [not null, note: 'FK Vehicle (CASCADE)']
+  image varchar(100) [not null]
+  is_cover boolean [default: false]
+  order int [default: 0]
+  Note: 'รูปรถ (หลายรูป/คัน)'
+}
+
+Table VehicleOption {
+  id bigint [pk, increment]
+  vehicle_id bigint [not null, note: 'FK Vehicle (CASCADE)']
+  name varchar(80) [not null]
+  Note: 'อุปกรณ์/ออปชันรถ'
+}
+
+Table Promotion {
+  id bigint [pk, increment]
+  title varchar(160) [not null]
+  vehicle_id bigint [null, note: 'FK Vehicle (SET_NULL)']
+  detail text
+  image varchar(100) [null]
+  active boolean [default: true]
+  order int [default: 0]
+  created_at datetime
+  Note: 'โปรโมชัน'
+}
+
+Table Review {
+  id bigint [pk, increment]
+  customer_name varchar(120) [not null]
+  content text
+  rating smallint [default: 5]
+  image varchar(100) [null]
+  vehicle_id bigint [null, note: 'FK Vehicle (SET_NULL)']
+  branch_id bigint [null, note: 'FK Branch (SET_NULL)']
+  active boolean [default: true]
+  created_at datetime
+  source varchar(10) [default: 'manual']
+  author_photo varchar(200)
+  google_url varchar(200)
+  relative_time varchar(60)
+  reviewed_at datetime [null]
+  external_id varchar(200) [note: 'indexed — รหัสรีวิว Google']
+  Note: 'รีวิวลูกค้า (กรอกเอง/ดึง Google)'
+}
+
+Table BranchPhoto {
+  id bigint [pk, increment]
+  branch_id bigint [not null, note: 'FK Branch (CASCADE)']
+  image varchar(100) [not null]
+  order int [default: 0]
+  Note: 'รูปร้านจาก Google Place Photos'
+}
+
+Table ReviewImage {
+  id bigint [pk, increment]
+  review_id bigint [not null, note: 'FK Review (CASCADE)']
+  image varchar(100) [not null]
+  order int [default: 0]
+  Note: 'รูปแนบในรีวิว'
+}
+
+Table Video {
+  id bigint [pk, increment]
+  source varchar(10) [default: 'youtube']
+  channel varchar(80)
+  video_id varchar(80) [not null]
+  url varchar(200) [not null]
+  title varchar(255)
+  thumbnail varchar(200)
+  published_at datetime [null]
+  external_id varchar(120) [unique, not null]
+  active boolean [default: true]
+  is_featured boolean [default: false]
+  order int [default: 0]
+  Note: 'คลิปรีวิว YouTube/TikTok'
+}
+
+Table Lead {
+  id bigint [pk, increment]
+  name varchar(80) [not null]
+  phone varchar(40) [not null]
+  email varchar(254)
+  message text
+  source_page varchar(120)
+  vehicle_id bigint [null, note: 'FK Vehicle (SET_NULL)']
+  is_handled boolean [default: false]
+  created_at datetime
+  Note: 'ฟอร์มคนสนใจ/ขอราคา'
+}
+
+Table Booking {
+  id bigint [pk, increment]
+  vehicle_id bigint [null, note: 'FK Vehicle (SET_NULL)']
+  name varchar(80) [not null]
+  phone varchar(40) [not null]
+  deposit_amount int [default: 0]
+  slip varchar(100) [null]
+  status varchar(12) [default: 'pending']
+  note text
+  created_at datetime
+  Note: 'การจองรถ + สลิปมัดจำ'
+}
+
+Table SiteSetting {
+  id bigint [pk, increment]
+  site_name varchar(80) [default: 'Oxlet Auto']
+  tagline varchar(160)
+  phone varchar(40)
+  line_id varchar(40)
+  hours varchar(80)
+  about_text text
+  visitor_count int [default: 12000]
+  promptpay_id varchar(20)
+  deposit_amount int [default: 1000]
+  Note: 'ตั้งค่าเว็บ (แถวเดียว pk=1)'
+}
+
+Table SocialLink {
+  id bigint [pk, increment]
+  label varchar(40) [not null]
+  value varchar(120)
+  url varchar(300) [not null]
+  icon varchar(40) [default: 'bi-link-45deg']
+  color varchar(20) [default: '#3b1c6e']
+  order int [default: 0]
+  active boolean [default: true]
+  Note: 'ช่องทางติดต่อ/โซเชียล'
+}
+
+Table LicensePlate {
+  id bigint [pk, increment]
+  prefix varchar(10)
+  number varchar(10) [not null]
+  province varchar(40) [default: 'กรุงเทพมหานคร']
+  plate_type varchar(10) [default: 'graphic']
+  price int [default: 0]
+  status varchar(12) [default: 'available']
+  image varchar(100) [null]
+  note text
+  is_featured boolean [default: false]
+  created_at datetime
+  Note: 'ป้ายทะเบียนขาย'
+}
+
+Table FAQ {
+  id bigint [pk, increment]
+  question varchar(200) [not null]
+  answer text [not null]
+  order int [default: 0]
+  active boolean [default: true]
+  Note: 'คำถามที่พบบ่อย'
+}
+
+// ---------- ความสัมพันธ์ (Foreign Keys) ----------
+Ref: Vehicle.brand_id > Brand.id           // PROTECT
+Ref: Vehicle.car_type_id > CarType.id      // SET_NULL
+Ref: Vehicle.branch_id > Branch.id         // SET_NULL
+Ref: VehicleImage.vehicle_id > Vehicle.id  // CASCADE
+Ref: VehicleOption.vehicle_id > Vehicle.id // CASCADE
+Ref: Promotion.vehicle_id > Vehicle.id     // SET_NULL
+Ref: Review.vehicle_id > Vehicle.id        // SET_NULL
+Ref: Review.branch_id > Branch.id          // SET_NULL
+Ref: BranchPhoto.branch_id > Branch.id     // CASCADE
+Ref: ReviewImage.review_id > Review.id     // CASCADE
+Ref: Lead.vehicle_id > Vehicle.id          // SET_NULL
+Ref: Booking.vehicle_id > Vehicle.id       // SET_NULL

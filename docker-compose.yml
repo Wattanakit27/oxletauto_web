@@ -1,0 +1,28 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    expose:
+      - "8000"
+    restart: unless-stopped
+    # media/ ใช้เฉพาะตอนยังไม่ต่อ R2 — ต่อ R2 แล้วลบ volume นี้ได้
+    volumes:
+      - media:/app/media
+
+  caddy:
+    image: caddy:2
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  media:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}รีวิวลูกค้า — {{ SITE_NAME }}{% endblock %}
+{% block head %}
+<style>
+  .photo-marquee{ overflow:hidden; width:100%; position:relative;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);
+            mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent); }
+  .photo-track{ display:flex; gap:.6rem; width:max-content; animation:scrollx 180s linear infinite; }
+  .photo-track img{ height:260px; width:390px; object-fit:cover; border-radius:10px; }
+  .photo-marquee:hover .photo-track{ animation-play-state:paused; }
+  @keyframes scrollx{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="text-ox mb-3">รีวิวลูกค้า</h3>
+
+  {# สรุปคะแนน Google ต่อสาขา #}
+  {% if branches_google %}
+  <div class="row g-3 mb-4">
+    {% for b in branches_google %}
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="text-center px-3 border-end">
+            <div class="display-6 fw-bold text-ox">{{ b.google_rating }}</div>
+            <div class="text-warning">★★★★★</div>
+          </div>
+          <div>
+            <div class="fw-bold">{{ b.name }}</div>
+            <div class="small text-muted">{{ b.google_reviews_count }} รีวิวบน Google</div>
+            {% if b.google_maps_url %}
+            <a href="{{ b.google_maps_url }}" target="_blank" class="btn btn-outline-secondary btn-sm mt-1">
+              <i class="bi bi-google"></i> ดูรีวิวทั้งหมดบน Google
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# แกลเลอรีรูปจริงของร้านจาก Google #}
+  {% if branch_photos %}
+  <h5 class="text-ox mb-2">ภาพจากร้าน & ลูกค้ารับรถ</h5>
+  <div class="photo-marquee mb-4">
+    <div class="photo-track">
+      {% for p in branch_photos %}<a href="{{ p.image.url }}" target="_blank"><img src="{{ p.image.url }}" loading="lazy"></a>{% endfor %}
+      {% for p in branch_photos %}<a href="{{ p.image.url }}" target="_blank" aria-hidden="true" tabindex="-1"><img src="{{ p.image.url }}" loading="lazy"></a>{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# รายการรีวิว #}
+  <h5 class="text-ox mb-2">รีวิวจากลูกค้า</h5>
+  <div class="row g-3">
+    {% for r in reviews %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 border-0 shadow-sm"><div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          {% if r.author_photo %}<img src="{{ r.author_photo }}" width="42" height="42" class="rounded-circle" referrerpolicy="no-referrer">
+          {% else %}<div class="rounded-circle bg-light text-ox d-flex align-items-center justify-content-center fw-bold" style="width:42px;height:42px">{{ r.customer_name|first }}</div>{% endif %}
+          <div class="flex-grow-1">
+            <div class="fw-bold lh-1">{{ r.customer_name }}</div>
+            <div class="small text-muted">{% if r.branch %}<i class="bi bi-geo-alt-fill text-ox"></i> {{ r.branch.name }}{% elif r.photos.all %}{{ r.photos.all|length }} รูปภาพ{% else %}ลูกค้า{% endif %}</div>
+          </div>
+          {% if r.source == 'google' %}<i class="bi bi-google text-danger fs-5"></i>{% endif %}
+        </div>
+        <div class="mb-1"><span class="text-warning">{% for _ in "x"|rjust:r.rating %}★{% endfor %}</span>
+          <span class="small text-muted ms-1">{{ r.relative_time }}</span></div>
+        {% if r.content %}<p class="small mb-2">{{ r.content }}</p>{% endif %}
+
+        {# รูปแนบในรีวิว (เหมือนลูกค้าแนบรูปรถ) #}
+        {% if r.photos.all %}
+        <div class="row g-1">
+          {% for ph in r.photos.all %}
+          <div class="{% if r.photos.all|length == 1 %}col-12{% else %}col-6{% endif %}">
+            <a href="{{ ph.image.url }}" target="_blank">
+              <img src="{{ ph.image.url }}" class="img-fluid rounded" style="height:130px;width:100%;object-fit:cover" loading="lazy">
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        {% elif r.image %}
+        <a href="{{ r.image.url }}" target="_blank"><img src="{{ r.image.url }}" class="img-fluid rounded"></a>
+        {% endif %}
+      </div></div>
+    </div>
+    {% empty %}
+    <div class="col-12"><div class="alert alert-light border">
+      ยังไม่มีรีวิว — เชื่อม Google Maps ได้ที่ <code>/admin/</code> → สาขา → ใส่ Google Place ID แล้วรัน
+      <code>python manage.py sync_google_reviews</code>
+    </div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

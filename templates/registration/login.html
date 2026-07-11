@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}เข้าสู่ระบบ — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:420px">
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <h4 class="text-ox mb-1">🔐 เข้าสู่ระบบทีมงาน</h4>
+      <p class="text-muted small mb-4">สำหรับแอดมินจัดการรถ/เนื้อหาเว็บ</p>
+
+      {% if form.errors %}
+      <div class="alert alert-danger py-2">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง ลองใหม่อีกครั้งค่ะ</div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">ชื่อผู้ใช้</label>
+          <input name="username" class="form-control" autofocus autocomplete="username" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">รหัสผ่าน</label>
+          <input name="password" type="password" class="form-control" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn-ox w-100">เข้าสู่ระบบ</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

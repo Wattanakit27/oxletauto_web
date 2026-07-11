@@ -1,0 +1,56 @@
+from django.contrib.auth import views as auth_views
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("all-cars/", views.all_cars, name="all_cars"),
+    path("plates/", views.plate_list, name="plate_list"),
+    path("compare/", views.compare, name="compare"),
+    path("brand/", views.brand_list, name="brand_list"),
+    path("car-type/", views.car_type_list, name="car_type_list"),
+    path("promotion/", views.promotion_list, name="promotion"),
+    path("reviews/", views.reviews, name="reviews"),
+    path("reviews-google/", views.gmaps_reviews, name="gmaps_reviews"),
+    path("about/", views.about, name="about"),
+    path("faq/", views.faq, name="faq"),
+    path("contact/", views.contact, name="contact"),
+    path("lead/", views.lead_submit, name="lead_submit"),
+    path("api/chat/", views.chat, name="chat"),
+    # webhook รับจาก backend (SaleforceOxletauto) — sync สถานะรถ realtime (ยืนยันด้วย secret)
+    path("api/stock-update/", views.api_stock_update, name="api_stock_update"),
+    # ล็อกอิน/ออกจากระบบ (หน้าเว็บ — เด้งกลับหน้าแรกหลังล็อกอิน)
+    path("login/", auth_views.LoginView.as_view(), name="login"),
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    # จัดการรถ (โหมดแอดมิน — staff เท่านั้น)
+    path("manage/car/add/", views.car_add, name="car_add"),
+    path("manage/sold/", views.car_sold, name="car_sold"),
+    path("manage/trash/", views.car_trash, name="car_trash"),
+    path("manage/car/<slug:slug>/relist/", views.car_relist, name="car_relist"),
+    path("manage/car/<slug:slug>/edit/", views.car_edit, name="car_edit"),
+    path("manage/car/<slug:slug>/delete/", views.car_delete, name="car_delete"),
+    path("manage/car/<slug:slug>/restore/", views.car_restore, name="car_restore"),
+    path("manage/car/<slug:slug>/purge/", views.car_purge, name="car_purge"),
+    path("manage/car/<slug:slug>/image/upload/", views.car_image_upload, name="car_image_upload"),
+    path("manage/image/<int:pk>/delete/", views.car_image_delete, name="car_image_delete"),
+    path("manage/image/<int:pk>/cover/", views.car_image_cover, name="car_image_cover"),
+    path("manage/promotion/add/", views.promo_add, name="promo_add"),
+    path("manage/promotion/<int:pk>/edit/", views.promo_edit, name="promo_edit"),
+    path("manage/promotion/<int:pk>/delete/", views.promo_delete, name="promo_delete"),
+    path("manage/branch/add/", views.branch_add, name="branch_add"),
+    path("manage/branch/<int:pk>/edit/", views.branch_edit, name="branch_edit"),
+    path("manage/branch/<int:pk>/delete/", views.branch_delete, name="branch_delete"),
+    path("manage/faq/add/", views.faq_add, name="faq_add"),
+    path("manage/faq/<int:pk>/edit/", views.faq_edit, name="faq_edit"),
+    path("manage/faq/<int:pk>/delete/", views.faq_delete, name="faq_delete"),
+    path("manage/settings/", views.site_settings, name="site_settings"),
+    path("manage/social/add/", views.social_add, name="social_add"),
+    path("manage/social/<int:pk>/edit/", views.social_edit, name="social_edit"),
+    path("manage/social/<int:pk>/delete/", views.social_delete, name="social_delete"),
+    path("manage/plate/add/", views.plate_add, name="plate_add"),
+    path("manage/plate/<int:pk>/edit/", views.plate_edit, name="plate_edit"),
+    path("manage/plate/<int:pk>/delete/", views.plate_delete, name="plate_delete"),
+    path("listings/<slug:slug>/book/", views.book_car, name="book_car"),
+    path("listings/<slug:slug>/", views.car_detail, name="car_detail"),
+]

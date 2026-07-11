@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}เลือกตามยี่ห้อ — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="text-ox mb-3">เลือกตามยี่ห้อ</h3>
+  <div class="row g-3">
+    {% for b in brands %}
+    <div class="col-4 col-md-2">
+      <a href="{% url 'all_cars' %}?brand={{ b.slug }}" class="card border-0 shadow-sm text-center p-3 text-decoration-none">
+        {% if b.logo %}<img src="{{ b.logo.url }}" style="height:40px;object-fit:contain">{% else %}<i class="bi bi-car-front fs-2 text-ox"></i>{% endif %}
+        <div class="small mt-2 text-dark">{{ b.name }}</div>
+      </a>
+    </div>
+    {% empty %}<p class="text-muted">ยังไม่มียี่ห้อ</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

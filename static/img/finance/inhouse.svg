@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" font-family="'Segoe UI',Tahoma,sans-serif">
+  <rect width="480" height="200" rx="20" fill="#1f2d3d"/>
+  <rect x="44" y="60" width="72" height="80" rx="8" fill="none" stroke="#f5a623" stroke-width="6"/>
+  <polygon points="80,44 116,72 44,72" fill="#f5a623"/>
+  <text x="80" y="118" text-anchor="middle" font-size="34" font-weight="800" fill="#f5a623">฿</text>
+  <text x="150" y="88" font-size="34" font-weight="800" fill="#ffffff">IN-HOUSE</text>
+  <text x="150" y="126" font-size="30" font-weight="700" fill="#f5a623">FINANCE</text>
+  <text x="150" y="158" font-size="20" fill="#c8d0da">ไฟแนนซ์นอก / จัดเอง</text>
+</svg>
