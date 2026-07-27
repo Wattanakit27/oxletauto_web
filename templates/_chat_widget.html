@@ -1,20 +1,40 @@
 {% load static %}
 {# ===== AI ผู้ช่วยขาย: ปุ่มวงกลมลอย (ลากย้ายได้) + หน้าต่างแชต ===== #}
 <style>
+  /* 3D out-of-frame: ปกติเห็นหน้าในกรอบวงกลม / hover หรือคลิก = ตัวล้ำออกมา"หน้า"กรอบ
+     กลไก: มาสคอต z-index 2 (อยู่หน้ากรอบ) + mask เฟดล่างให้จมหายเข้าวงกลม */
   #oxBubble{
     position:fixed; right:20px; bottom:20px; z-index:1090;
-    width:62px; height:62px; border-radius:50%; border:none; cursor:grab; padding:0; overflow:hidden;
-    background:#3b1c6e; color:#fff; box-shadow:0 .5rem 1.2rem rgba(0,0,0,.3);
-    display:flex; align-items:center; justify-content:center; font-size:1.7rem;
-    touch-action:none; transition:transform .15s, box-shadow .15s;
+    width:62px; height:62px; border:none; cursor:grab; padding:0;
+    background:none; overflow:visible;      /* visible = ให้ตัวทะลุกรอบออกมาได้ */
+    touch-action:none;
+    filter:drop-shadow(0 .5rem 1rem rgba(0,0,0,.35));
   }
-  #oxBubble .ox-bubble-img{ width:100%; height:100%; border-radius:50%; object-fit:cover; pointer-events:none; }
-  #oxBubble:hover{ transform:scale(1.06); box-shadow:0 .6rem 1.5rem rgba(0,0,0,.4); }
+  #oxBubble .ox-disc{                        /* กรอบวงกลม 3D (ขอบขาว + เงาในให้ดูลึก) */
+    position:absolute; inset:0; z-index:1; border-radius:50%; overflow:hidden;
+    background:#3b1c6e; border:3px solid rgba(255,255,255,.92);
+    box-shadow:inset 0 -3px 8px rgba(0,0,0,.38), inset 0 3px 6px rgba(255,255,255,.14);
+    transition:transform .18s;
+  }
+  #oxBubble .ox-face{ width:100%; height:100%; object-fit:cover; transition:opacity .2s; }
+  #oxBubble .ox-pop{                         /* มาสคอตล้ำหน้ากรอบ — ปกติซ่อน, โผล่ตอน hover/คลิก */
+    position:absolute; z-index:2; left:50%; bottom:4px; width:60px;
+    pointer-events:none; opacity:0;
+    -webkit-mask-image:linear-gradient(to bottom,#000 48%,transparent 82%);
+            mask-image:linear-gradient(to bottom,#000 48%,transparent 82%);
+    transform:translate(-50%, 26%) scale(.86); transform-origin:bottom center;
+    filter:drop-shadow(0 6px 8px rgba(0,0,0,.4));
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1), opacity .22s;  /* เด้งสปริง */
+  }
+  #oxBubble:hover .ox-pop, #oxBubble.popped .ox-pop{ opacity:1; transform:translate(-50%,0) scale(1); }
+  #oxBubble:hover .ox-face, #oxBubble.popped .ox-face{ opacity:0; }       /* ตัวโผล่ = หน้าในกรอบจาง */
+  #oxBubble:hover .ox-disc{ transform:scale(1.05); }
   #oxBubble:active{ cursor:grabbing; }
   #oxBubble .ox-badge{
-    position:absolute; top:-2px; right:-2px; width:14px; height:14px;
+    position:absolute; z-index:3; top:-2px; right:-2px; width:14px; height:14px;
     background:#22c55e; border:2px solid #fff; border-radius:50%; pointer-events:none;
   }
+  @media (prefers-reduced-motion:reduce){ #oxBubble .ox-pop{ transition-duration:.01ms; } }
 
   #oxPanel{
     position:fixed; right:20px; bottom:92px; z-index:1091;
@@ -51,15 +71,17 @@
 </style>
 
 <button id="oxBubble" aria-label="แชตกับผู้ช่วย AI">
-  {# เปลี่ยนรูปบอตได้ที่ไฟล์ static/img/ai-bot.png #}
-  <img class="ox-bubble-img" src="{% static 'img/ai-bot.png' %}" alt="ผู้ช่วย AI">
+  {# มาสคอตครึ่งตัว (พื้นหลังใส) — โผล่ตอน hover/คลิก, ปกติซ่อนอยู่ในวงกลม #}
+  <img class="ox-pop" src="{% static 'img/ai-mascot-pop.png' %}" alt="" aria-hidden="true">
+  {# ปกติ: โชว์หน้าในวงกลม — เปลี่ยนรูปหน้าได้ที่ static/img/ai-bot.png #}
+  <span class="ox-disc"><img class="ox-face" src="{% static 'img/ai-bot.png' %}" alt="ผู้ช่วย AI"></span>
   <span class="ox-badge"></span>
 </button>
 
 <div id="oxPanel" role="dialog" aria-label="ผู้ช่วยขาย Oxlet">
   <div class="ox-head">
     <div class="ox-ava"><img src="{% static 'img/ai-bot.png' %}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover"></div>
-    <div><strong>น้องอ๊อกเล็ต</strong><br><small>ผู้ช่วยหารถ · ตอบจากสต็อกจริง</small></div>
+    <div><strong>น้องอ๊อกเล็ตธ์</strong><br><small>ผู้ช่วยหารถ · ตอบจากสต็อกจริง</small></div>
     <button id="oxClose" aria-label="ปิด">&times;</button>
   </div>
   <div id="oxMsgs"></div>
@@ -121,12 +143,17 @@
   bubble.addEventListener('pointerup', endDrag);
   bubble.addEventListener('pointercancel', endDrag);
 
-  document.getElementById('oxClose').addEventListener('click', function(){ panel.classList.remove('open'); });
+  document.getElementById('oxClose').addEventListener('click', function(){
+    panel.classList.remove('open');
+    bubble.classList.remove('popped');
+  });
 
   function togglePanel(){
     panel.classList.toggle('open');
+    // มือถือไม่มี hover -> คลิกเปิดแชต = เด้งครึ่งตัวออกมา (คลาส .popped)
+    bubble.classList.toggle('popped', panel.classList.contains('open'));
     if(panel.classList.contains('open')){
-      if(!greeted){ addMsg('bot', 'สวัสดีค่ะ 🙏 น้องอ๊อกเล็ตยินดีช่วยหารถค่ะ\nลองพิมพ์ยี่ห้อ/รุ่น หรืองบที่สนใจได้เลย เช่น "Honda Civic งบผ่อนเดือนละ 8,000"'); greeted = true; }
+      if(!greeted){ addMsg('bot', 'สวัสดีค่ะ 🙏 น้องอ๊อกเล็ตธ์ยินดีช่วยหารถค่ะ\nลองพิมพ์ยี่ห้อ/รุ่น หรืองบที่สนใจได้เลย เช่น "Honda Civic งบผ่อนเดือนละ 8,000"'); greeted = true; }
       setTimeout(function(){ input.focus(); }, 100);
     }
   }

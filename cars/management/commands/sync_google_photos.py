@@ -9,12 +9,28 @@ import urllib.request
 from django.conf import settings
 from django.core.files import File
 from django.core.management.base import BaseCommand
+from PIL import Image
 
 from cars.models import Branch, BranchPhoto
 
 DETAILS = "https://maps.googleapis.com/maps/api/place/details/json"
 PHOTO = "https://maps.googleapis.com/maps/api/place/photo"
 UA = {"User-Agent": "Mozilla/5.0 (compatible; OxletImport/1.0)"}
+MAX_SIDE = 1000  # เว็บโชว์แค่ 390x260 — เก็บ 1000px พอสำหรับคลิกดูรูปเต็ม
+
+
+def _compress(raw):
+    """ย่อ+บีบอัดก่อนเก็บ — Google ส่งรูปบีบอัดแย่มาก (เคยเจอ 1.7MB/รูป)"""
+    im = Image.open(io.BytesIO(raw))
+    if im.mode in ("RGBA", "P", "LA"):
+        im = im.convert("RGB")
+    w, h = im.size
+    scale = min(1.0, MAX_SIDE / max(w, h))
+    if scale < 1.0:
+        im = im.resize((round(w * scale), round(h * scale)), Image.LANCZOS)
+    out = io.BytesIO()
+    im.save(out, "JPEG", quality=82, optimize=True, progressive=True)
+    return out.getvalue()
 
 
 class Command(BaseCommand):
@@ -43,9 +59,10 @@ class Command(BaseCommand):
             b.photos.all().delete()  # ดึงใหม่ทุกครั้ง (รูปไม่เยอะ)
             for i, ref in enumerate(refs[: opts["max"]]):
                 pu = PHOTO + "?" + urllib.parse.urlencode(
-                    {"maxwidth": 1200, "photo_reference": ref, "key": key})
+                    {"maxwidth": MAX_SIDE, "photo_reference": ref, "key": key})
                 try:
                     img = urllib.request.urlopen(urllib.request.Request(pu, headers=UA), timeout=40).read()
+                    img = _compress(img)
                     BranchPhoto.objects.create(
                         branch=b, order=i,
                         image=File(io.BytesIO(img), name=f"{b.pk}-{i}.jpg"),
