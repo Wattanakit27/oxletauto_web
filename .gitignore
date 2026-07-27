@@ -3,7 +3,11 @@ __pycache__/
 *.sqlite3
 .env
 /staticfiles/
-/media/
+# media/ เก็บรูปเนื้อหาไว้ใน git — ยกเว้น:
+#  - booking_slips: สลิปโอนเงินลูกค้า (ข้อมูลลับ)
+#  - vehicles: รูปรถดึงผ่าน API จาก backend อีกระบบ ไม่ต้องเก็บใน git (488MB)
+/media/booking_slips/
+/media/vehicles/
 .venv/
 venv/
 .DS_Store
