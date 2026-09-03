@@ -8,6 +8,12 @@
   .plate .pv-num{ font-size:1.8rem; font-weight:800; letter-spacing:1px; color:#111; line-height:1.1; }
   .plate .pv-prov{ font-size:.78rem; color:#555; border-top:1px dashed #bbb; margin-top:5px; padding-top:3px; }
   .plate.sold{ opacity:.55; }
+  /* ป้ายของร้านเรา — ขอบทอง + ริบบิ้นมุมบน */
+  .plate-own{ position:relative; border:2px solid #f0a500 !important;
+              box-shadow:0 .35rem 1.1rem rgba(240,165,0,.28) !important; overflow:hidden; }
+  .plate-own .own-ribbon{ background:linear-gradient(90deg,#f0a500,#ffcb45); color:#3a2500;
+              font-size:.72rem; font-weight:700; text-align:center; padding:3px 6px; letter-spacing:.3px; }
+  .own-head{ border-left:5px solid #f0a500; padding-left:.6rem; }
 </style>
 <div class="container py-4">
   <div class="d-flex align-items-center mb-1">
@@ -56,55 +62,41 @@
           <option value="-price" {% if current.sort == '-price' %}selected{% endif %}>ราคา: สูง → ต่ำ</option>
           <option value="sum" {% if current.sort == 'sum' %}selected{% endif %}>ผลรวม: น้อย → มาก</option>
         </select>
+        {% if own_total %}
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" role="switch" id="ownOnly" name="own" value="1"
+                 {% if current.own == '1' %}checked{% endif %} onchange="this.form.submit()">
+          <label class="form-check-label small" for="ownOnly">⭐ เฉพาะป้ายของร้าน ({{ own_total }})</label>
+        </div>
+        {% endif %}
         <span class="small text-muted">พบ <strong>{{ total }}</strong> ป้าย</span>
-        {% if current.type or current.price or current.sum or current.q or current.sort %}
+        {% if current.type or current.price or current.sum or current.q or current.sort or current.own %}
         <a href="{% url 'plate_list' %}" class="small text-danger ms-auto"><i class="bi bi-x-circle"></i> ล้างตัวกรอง</a>
         {% endif %}
       </div>
     </div>
   </form>
 
-  <div class="row g-3">
-    {% for p in plates %}
-    <div class="col-6 col-md-4 col-lg-3">
-      <div class="card h-100 border-0 shadow-sm">
-        <div class="card-body d-flex flex-column">
-          {% if p.image %}
-          <img src="{{ p.image.url }}" class="img-fluid rounded mb-2" alt="{{ p }}">
-          {% else %}
-          <div class="plate {% if p.status == 'sold' %}sold{% endif %} mb-2">
-            <div class="pv-num">{{ p.prefix }} {{ p.number }}</div>
-            <div class="pv-prov">{{ p.province }}</div>
-          </div>
-          {% endif %}
-
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="badge bg-light text-dark border">ผลรวม {{ p.digit_sum }}</span>
-            {% if p.status == 'reserved' %}<span class="badge bg-warning text-dark">จองแล้ว</span>
-            {% elif p.status == 'sold' %}<span class="badge bg-secondary">ขายแล้ว</span>{% endif %}
-          </div>
-          <div class="price fs-5">{{ p.price|intcomma }} ฿</div>
-          {% if p.note %}<div class="small text-muted">{{ p.note }}</div>{% endif %}
-
-          <div class="mt-auto">
-            {% if p.status != 'sold' %}
-            <a href="{{ p.line_url }}" target="_blank" rel="noopener" class="btn btn-success btn-sm w-100 mt-2"><i class="bi bi-line"></i> สอบถาม/จอง</a>
-            {% endif %}
-            {% if request.user.is_staff %}
-            <div class="d-flex gap-1 mt-1">
-              <a href="{% url 'plate_edit' p.pk %}" class="btn btn-sm btn-dark flex-fill">✏️ แก้ไข</a>
-              <form method="post" action="{% url 'plate_delete' p.pk %}" class="flex-fill" onsubmit="return confirm('ลบป้ายนี้?')">{% csrf_token %}
-                <button class="btn btn-sm btn-outline-danger w-100">🗑️</button>
-              </form>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
-    {% empty %}
-    <p class="text-muted">ยังไม่มีป้ายทะเบียนลงขาย{% if request.user.is_staff %} — กด "➕ เพิ่มป้าย" ได้เลย{% endif %}</p>
-    {% endfor %}
+  {% if own_plates %}
+  <div class="d-flex align-items-center gap-2 mb-2 own-head">
+    <h5 class="mb-0">⭐ ป้ายของร้านเรา</h5>
+    <span class="badge bg-warning text-dark">{{ own_plates|length }} ป้าย</span>
+    <span class="small text-muted d-none d-md-inline">ถือป้ายเอง โอนเองจบในที่เดียว ราคาคุยกันได้</span>
   </div>
+  <div class="row g-3 mb-4">
+    {% for p in own_plates %}{% include "_plate_card.html" %}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if other_plates %}
+  {% if own_plates %}<h5 class="mb-2 text-muted">เลขสวยอื่น ๆ ({{ other_plates|length }})</h5>{% endif %}
+  <div class="row g-3">
+    {% for p in other_plates %}{% include "_plate_card.html" %}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not plates %}
+  <p class="text-muted">ไม่พบป้ายที่ตรงเงื่อนไข{% if request.user.is_staff %} — กด "➕ เพิ่มป้าย" เพื่อลงป้ายของร้านได้เลย{% endif %}</p>
+  {% endif %}
 </div>
 {% endblock %}

@@ -381,7 +381,7 @@ class SocialLink(models.Model):
     """ช่องทางติดต่อ/โซเชียล — แก้/เพิ่ม/ลบได้ในแอดมิน"""
     label = models.CharField("ชื่อช่องทาง", max_length=40)
     value = models.CharField("ข้อความที่แสดง", max_length=120, blank=True)
-    url = models.CharField("ลิงก์ (รองรับ tel:, https:, line:)", max_length=300)
+    url = models.CharField("ลิงก์ (รองรับ tel:, https:, line:)", max_length=500)
     icon = models.CharField("ไอคอน (Bootstrap)", max_length=40, default="bi-link-45deg",
                             help_text="เช่น bi-line, bi-facebook, bi-instagram, bi-telephone-fill")
     color = models.CharField("สี (hex)", max_length=20, default="#3b1c6e")
@@ -400,7 +400,13 @@ class SocialLink(models.Model):
 class LicensePlate(models.Model):
     """ป้ายทะเบียนขาย (เลขสวย/เลขมงคล) — เพิ่ม/แก้/ลบจากหน้าเว็บ"""
     STATUS_CHOICES = [("available", "พร้อมขาย"), ("reserved", "จองแล้ว"), ("sold", "ขายแล้ว")]
-    TYPE_CHOICES = [("graphic", "ป้ายประมูล (กราฟิก)"), ("white", "ป้ายขาว-ดำทั่วไป")]
+    TYPE_CHOICES = [
+        ("graphic", "ป้ายประมูล (กราฟิก)"),
+        ("white", "ป้ายขาว-ดำทั่วไป"),
+        ("blue", "ป้ายฟ้า (รถตู้ รย.2)"),
+        ("green", "ป้ายเขียว (กระบะ)"),
+        ("gold", "ป้ายทอง"),
+    ]
 
     prefix = models.CharField("หมวดอักษร", max_length=10, blank=True, help_text="เช่น กก, ฌฌ, 1กก")
     number = models.CharField("เลขทะเบียน", max_length=10, help_text="เช่น 8888, 1234")
@@ -411,12 +417,40 @@ class LicensePlate(models.Model):
     image = models.ImageField("รูปป้าย (ถ้ามี)", upload_to="plates/", blank=True, null=True)
     note = models.TextField("รายละเอียด", blank=True)
     is_featured = models.BooleanField("ป้ายแนะนำ", default=False)
+    is_own = models.BooleanField("ป้ายของร้านเรา", default=True,
+                                 help_text="ป้ายที่เราถือเอง — จะโชว์ขึ้นก่อนป้ายที่ดึงมาจากเว็บอื่นเสมอ")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # ---- ข้อมูลจากเว็บต้นทาง (เติมโดย import_plates, เว้นว่างถ้าเพิ่มเอง) ----
+    source = models.CharField("แหล่งข้อมูล", max_length=30, blank=True,
+                              help_text="เช่น chokdee, ben — เว้นว่าง = เพิ่มเอง")
+    source_id = models.CharField("รหัสที่ต้นทาง", max_length=30, blank=True)
+    source_url = models.URLField("ลิงก์ต้นทาง", max_length=500, blank=True)
+    category = models.CharField("หมวดหมู่", max_length=120, blank=True)
+    vehicle_type = models.CharField("ประเภทรถ", max_length=60, blank=True,
+                                    help_text="เช่น รถยนต์ (รย.1), กระบะ (รย.3)")
+    style = models.CharField("รูปแบบป้าย/เลข", max_length=60, blank=True,
+                             help_text="ตามต้นทาง เช่น ป้ายขาว-ดำ, 2-2")
+    sum_total = models.PositiveIntegerField("ผลรวมตามต้นทาง", null=True, blank=True,
+                                            help_text="รวมค่าตัวอักษรด้วย (ผลรวมเลขล้วนคำนวณให้เอง)")
+    synced_at = models.DateTimeField("ดึงข้อมูลล่าสุด", null=True, blank=True)
 
     class Meta:
         verbose_name = "ป้ายทะเบียน"
         verbose_name_plural = "ป้ายทะเบียน"
-        ordering = ["-is_featured", "-created_at"]
+        ordering = ["-is_own", "-is_featured", "-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source", "source_id"],
+                condition=~models.Q(source_id=""),
+                name="uniq_plate_per_source",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["status", "plate_type"]),
+            models.Index(fields=["-is_own", "-is_featured", "-created_at"]),
+            models.Index(fields=["price"]),
+        ]
 
     def __str__(self):
         return f"{self.prefix} {self.number}".strip()

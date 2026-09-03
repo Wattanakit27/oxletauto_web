@@ -785,7 +785,10 @@ def plate_list(request):
     price_range = request.GET.get("price")
     keyword = request.GET.get("q")
     sort = request.GET.get("sort")
+    own_only = request.GET.get("own") == "1"
 
+    if own_only:
+        qs = qs.filter(is_own=True)
     if plate_type in dict(LicensePlate.TYPE_CHOICES):
         qs = qs.filter(plate_type=plate_type)
     if price_range:
@@ -807,12 +810,13 @@ def plate_list(request):
     if sum_val and sum_val.isdigit():
         plates = [p for p in plates if p.digit_sum == int(sum_val)]
 
+    # ป้ายของร้านมาก่อนเสมอ ไม่ว่าจะเรียงแบบไหน (not p.is_own -> False มาก่อน True)
     if sort == "price":
-        plates.sort(key=lambda p: p.price)
+        plates.sort(key=lambda p: (not p.is_own, p.price))
     elif sort == "-price":
-        plates.sort(key=lambda p: p.price, reverse=True)
+        plates.sort(key=lambda p: (not p.is_own, -p.price))
     elif sort == "sum":
-        plates.sort(key=lambda p: p.digit_sum)
+        plates.sort(key=lambda p: (not p.is_own, p.digit_sum))
 
     # ตัวเลือกผลรวมที่มีของจริง (ให้ dropdown โชว์เฉพาะที่มี)
     base = LicensePlate.objects.all()
@@ -820,9 +824,16 @@ def plate_list(request):
         base = base.exclude(status="sold")
     available_sums = sorted({p.digit_sum for p in base})
 
+    # แยกป้ายของร้านออกมาโชว์เป็นบล็อกเด่นด้านบน ที่เหลือต่อท้าย
+    own_plates = [p for p in plates if p.is_own]
+    other_plates = [p for p in plates if not p.is_own]
+
     ctx = {
         "plates": plates,
+        "own_plates": own_plates,
+        "other_plates": other_plates,
         "total": len(plates),
+        "own_total": base.filter(is_own=True).count(),
         "plate_types": LicensePlate.TYPE_CHOICES,
         "price_ranges": constants.PLATE_PRICE_RANGES,
         "available_sums": available_sums,

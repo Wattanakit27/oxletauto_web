@@ -91,5 +91,5 @@ class LicensePlateForm(BootstrapMixin, forms.ModelForm):
     class Meta:
         model = LicensePlate
         fields = ["prefix", "number", "province", "plate_type",
-                  "price", "status", "image", "note", "is_featured"]
+                  "price", "status", "image", "note", "is_featured", "is_own"]
         widgets = {"note": forms.Textarea(attrs={"rows": 2})}

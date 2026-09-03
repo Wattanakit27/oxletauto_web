@@ -8,6 +8,8 @@ __pycache__/
 #  - vehicles: รูปรถดึงผ่าน API จาก backend อีกระบบ ไม่ต้องเก็บใน git (488MB)
 /media/booking_slips/
 /media/vehicles/
+#  - plates: รูปป้ายทะเบียน 1,700+ ใบ (82MB) นำเข้าใหม่ได้ด้วย import_plates
+/media/plates/
 .venv/
 venv/
 .DS_Store

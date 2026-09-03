@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('label', models.CharField(max_length=40, verbose_name='ชื่อช่องทาง')),
                 ('value', models.CharField(blank=True, max_length=120, verbose_name='ข้อความที่แสดง')),
-                ('url', models.CharField(max_length=300, verbose_name='ลิงก์ (รองรับ tel:, https:, line:)')),
+                ('url', models.CharField(max_length=500, verbose_name='ลิงก์ (รองรับ tel:, https:, line:)')),
                 ('icon', models.CharField(default='bi-link-45deg', help_text='เช่น bi-line, bi-facebook, bi-instagram, bi-telephone-fill', max_length=40, verbose_name='ไอคอน (Bootstrap)')),
                 ('color', models.CharField(default='#3b1c6e', max_length=20, verbose_name='สี (hex)')),
                 ('order', models.PositiveIntegerField(default=0, verbose_name='ลำดับ')),

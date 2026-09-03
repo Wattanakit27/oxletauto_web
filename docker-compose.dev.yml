@@ -1,0 +1,24 @@
+# Postgres สำหรับ dev ในเครื่อง (prod ใช้ Supabase ตาม DEPLOY.md)
+#   docker compose -f docker-compose.dev.yml up -d
+#   docker compose -f docker-compose.dev.yml down        # ข้อมูลยังอยู่ใน volume
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: oxlet_pg
+    environment:
+      POSTGRES_DB: oxlet
+      POSTGRES_USER: oxlet
+      POSTGRES_PASSWORD: oxlet
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oxlet -d oxlet"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pgdata:
