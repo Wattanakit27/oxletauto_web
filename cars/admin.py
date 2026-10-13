@@ -42,15 +42,16 @@ class VehicleOptionInline(admin.TabularInline):
 
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
-    list_display = ("thumb", "title", "brand", "year", "price_baht", "installment_min", "status", "is_featured", "view_link")
+    list_display = ("thumb", "title", "brand", "year", "price_baht", "installment_min", "status", "listed", "is_featured", "view_link")
     list_display_links = ("thumb", "title")
-    list_filter = ("status", "is_featured", "brand", "car_type", "transmission", "condition", "branch")
-    search_fields = ("model", "submodel", "brand__name", "plate")
+    # listed = ปุ่ม Active จากระบบหลังบ้าน (ไม่ใส่ list_editable — แก้ที่นี่จะโดน sync ทับ)
+    list_filter = ("status", "listed", "is_featured", "brand", "car_type", "transmission", "condition", "branch")
+    search_fields = ("model", "submodel", "brand__name", "plate", "stock_code")
     list_editable = ("status", "is_featured")
     list_per_page = 30
     save_on_top = True
     inlines = [VehicleImageInline, VehicleOptionInline]
-    readonly_fields = ("slug", "view_link", "created_at", "updated_at")
+    readonly_fields = ("slug", "view_link", "created_at", "updated_at", "stock_code")
     fieldsets = (
         ("ข้อมูลรถ", {"fields": (("brand", "model"), ("submodel", "year"), ("car_type", "plate"))}),
         ("สเปก", {"fields": (("transmission", "drivetrain", "fuel"),
@@ -60,7 +61,7 @@ class VehicleAdmin(admin.ModelAdmin):
         ("สถานะ / สาขา", {"fields": (("status", "condition", "branch"), "is_featured")}),
         ("รายละเอียด / รับประกัน", {"fields": ("warranty", "inspection_points", "description")}),
         ("ระบบ (อัตโนมัติ)", {"classes": ("collapse",),
-                              "fields": ("slug", "view_link", "created_at", "updated_at")}),
+                              "fields": ("slug", "view_link", ("stock_code", "listed"), "created_at", "updated_at")}),
     )
 
     def get_queryset(self, request):

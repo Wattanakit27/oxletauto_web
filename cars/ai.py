@@ -29,7 +29,8 @@ SYSTEM_PROMPT = """คุณคือ "น้องอ๊อกเล็ตธ�
 # ---------- ดึงข้อมูลรถจริง ----------
 
 def _available():
-    return (Vehicle.objects.filter(deleted_at__isnull=True)
+    # ต้องตรงกับ views._available() — รถที่ยังไม่ Active (listed=False) ห้ามให้ AI เอาไปเสนอลูกค้า
+    return (Vehicle.objects.filter(deleted_at__isnull=True, listed=True)
             .exclude(status="sold").select_related("brand", "car_type", "branch"))
 
 

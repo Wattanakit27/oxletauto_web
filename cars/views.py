@@ -49,8 +49,17 @@ from .promptpay import promptpay_payload
 
 
 def _available():
-    return (Vehicle.objects.filter(deleted_at__isnull=True)
+    # listed=False = รถจากสต็อกที่ยังไม่กด Active ในระบบหลังบ้าน → ลูกค้าไม่เห็น (ai._available ต้องตรงกัน)
+    return (Vehicle.objects.filter(deleted_at__isnull=True, listed=True)
             .exclude(status="sold").select_related("brand", "car_type"))
+
+
+def _visible(request):
+    """เงื่อนไขรถที่ "คนนี้" เปิดดูหน้ารถได้ — staff เห็นรถที่ซ่อนอยู่ด้วย (ไว้ตรวจก่อนกด Active)"""
+    q = Q(deleted_at__isnull=True)
+    if not request.user.is_staff:
+        q &= Q(listed=True)
+    return q
 
 
 def _sync_car_photos(vehicle_id, photos):
@@ -110,13 +119,48 @@ def _sync_car_photos(vehicle_id, photos):
             cover.save(update_fields=["is_cover"])
 
 
+def _truthy(v, default=True):
+    if v is None:
+        return default
+    if isinstance(v, bool):
+        return v
+    return str(v).strip().lower() in ("1", "true", "yes", "on")
+
+
+def _price_in(v):
+    """ราคาขายที่ backend ส่งมา → int บาท หรือ None (ไม่ส่ง/0/ติดลบ/เพี้ยน = ไม่แตะราคาบนเว็บ)"""
+    try:
+        n = int(float(str(v).replace(",", "").strip()))
+    except (TypeError, ValueError):
+        return None
+    return n if 0 < n < 100_000_000 else None
+
+
+def _stock_reply(v, action, code, created=False, **extra):
+    """คำตอบของ webhook — backend เอา `listed` ไปโชว์ว่า "ขึ้นเว็บแล้วจริงไหม" (ไม่เดาเอง)"""
+    listed = bool(v and v.listed and v.status != "sold" and not v.deleted_at)
+    out = {"ok": True, "action": action, "code": code, "created": created, "listed": listed,
+           "status": v.status if v else "", "price": v.price if v else None,
+           "path": v.get_absolute_url() if (v and listed) else ""}
+    out.update(extra)
+    return JsonResponse(out)
+
+
 @csrf_exempt
 @require_POST
 def api_stock_update(request):
-    """Webhook รับจาก backend (SaleforceOxletauto) เมื่อรถในสต็อกเปลี่ยนสถานะ (realtime).
-    ยืนยันด้วย secret · sync เฉพาะรถที่ "ลิสต์ไว้แล้ว" (Vehicle.stock_code = Car.code ของ backend):
-      ขายแล้ว→ซ่อน (status=sold) · พร้อมขาย→available · จอง→reserved · สเตปอื่น = ไม่ทำอะไร
-    รถใหม่ที่ยังไม่ลิสต์ = ไม่สร้างอัตโนมัติ (คนเพิ่มผ่านหน้า add-car ให้ครบข้อมูล/ราคาก่อน)."""
+    """Webhook รับจาก backend (SaleforceOxletauto) — รถในสต็อกเปลี่ยนสถานะ / กดปุ่ม Active (realtime).
+    ยืนยันด้วย secret · ผูกด้วย Vehicle.stock_code = Car.code ของ backend
+
+    ★ ปุ่ม Active (ต.ค.69): รถจาก backend ขึ้นหน้าเว็บเมื่อ `active=true` **และ** ถึงสเตปพร้อมขาย/จอง
+      - active=false → มีประกาศอยู่ = ซ่อน (listed=False · ข้อมูล/ราคา/รูปยังอยู่) · ยังไม่มี = ไม่สร้าง
+      - active=true + พร้อมขาย/จอง → มีประกาศ = อัปเดตสถานะ + เปิดโชว์ · ยังไม่มี = สร้างใหม่ (ราคาจาก backend · ไม่มี = 0)
+      - active=true + สเตปอื่น → มีประกาศ = เปิดโชว์ (สถานะเดิม) · ยังไม่มี = รอถึงพร้อมขาย (`waiting`)
+      - ขายแล้ว → ซ่อน (status=sold) เสมอ ไม่ว่า active จะเป็นอะไร
+      - ไม่ส่ง `active` มา (backend รุ่นเก่า) = ถือว่า true → พฤติกรรมเดิมทุกอย่าง
+    ★ ราคาขาย (ต.ค.69): `price` จาก backend = แหล่งความจริงของราคา → มีค่า = ทับราคาบนเว็บทุกครั้ง
+      (สร้างใหม่ก็ใช้เลย ไม่เป็น 0 แล้ว) · ไม่ส่ง/ว่าง = คงราคาที่ staff ตั้งในเว็บไว้
+    คำตอบมี `listed` = ตอนนี้ลูกค้าเห็นรถคันนี้บนเว็บไหม (backend เอาไปโชว์สถานะจริง)."""
     secret = getattr(settings, "STOCK_SYNC_SECRET", "")
     got = request.headers.get("X-Stock-Secret") or request.POST.get("secret") or ""
     if not secret or got != secret:
@@ -125,9 +169,13 @@ def api_stock_update(request):
         data = json.loads(request.body or "{}")
     except (ValueError, TypeError):
         data = {}
+    if not isinstance(data, dict):
+        data = {}
     code = str(data.get("code") or "").strip()
     stage = str(data.get("stage") or "").strip()
     status_in = str(data.get("status") or "").strip()
+    active = _truthy(data.get("active"), default=True)
+    price = _price_in(data.get("price"))
     if not code:
         return JsonResponse({"ok": False, "error": "no code"}, status=400)
 
@@ -135,22 +183,49 @@ def api_stock_update(request):
     if stage == "sold" or status_in == "sold":
         matched = (Vehicle.objects.filter(stock_code=code, deleted_at__isnull=True)
                    .update(status="sold"))
-        return JsonResponse({"ok": True, "action": "sold", "matched": matched, "created": False, "code": code})
+        return JsonResponse({"ok": True, "action": "sold", "matched": matched, "created": False,
+                             "code": code, "listed": False, "status": "sold", "path": ""})
+
+    v = Vehicle.objects.filter(stock_code=code, deleted_at__isnull=True).first()
+    if v and price and v.price != price:      # ราคาตาม backend เสมอ (รวมตอนซ่อนอยู่ — เปิดคืนมาได้ราคาล่าสุด)
+        v.price = price
+        v.save(update_fields=["price", "updated_at"])
+
+    # ยังไม่ Active → ซ่อน (ไม่ลบ — staff เติมราคา/รายละเอียดไว้แล้ว กด Active ใหม่ต้องได้คืนครบ)
+    if not active:
+        if v and v.listed:
+            v.listed = False
+            v.save(update_fields=["listed", "updated_at"])
+            return _stock_reply(v, "hidden", code)
+        return _stock_reply(v, "inactive", code)
 
     if stage == "show":
         new_status = "available"
     elif stage == "reserve":
         new_status = "reserved"
     else:
-        return JsonResponse({"ok": True, "action": "ignored", "stage": stage})
+        new_status = ""
+
+    if not new_status:
+        # Active แล้วแต่รถยังไม่ถึงพร้อมขาย/จอง — มีประกาศอยู่ (เคยขึ้นแล้ว) = เปิดโชว์ตามสถานะเดิม
+        if v and not v.listed:
+            v.listed = True
+            v.save(update_fields=["listed", "updated_at"])
+            return _stock_reply(v, "shown", code)
+        return _stock_reply(v, "waiting" if not v else "ignored", code, stage=stage)
 
     # พร้อมขาย/จอง — มีประกาศแล้ว = อัปเดตสถานะ · ยังไม่มี = สร้างใหม่ (โชว์ลูกค้าทันที · staff เติมราคาทีหลัง)
-    v = Vehicle.objects.filter(stock_code=code, deleted_at__isnull=True).first()
     created = False
     if v:
+        fields = []
         if v.status != new_status:
             v.status = new_status
-            v.save(update_fields=["status"])
+            fields.append("status")
+        if not v.listed:
+            v.listed = True
+            fields.append("listed")
+        if fields:
+            v.save(update_fields=fields + ["updated_at"])
     else:
         brand, _ = Brand.objects.get_or_create(name=(data.get("brand") or "").strip() or "ไม่ระบุ")
         try:
@@ -168,16 +243,34 @@ def api_stock_update(request):
             year=year,
             color_exterior=(data.get("color") or "").strip(),
             plate=(data.get("plate") or "").strip(),
-            mileage=km, price=0, status=new_status,
+            mileage=km, price=price or 0, status=new_status, listed=True,
         )
         created = True
 
     # รูปขายจาก backend → reconcile (เปลี่ยนปก/เพิ่ม/ลบให้ตรงกัน) ใน thread
     photos = data.get("photos")
     if isinstance(photos, list) and photos:
-        threading.Thread(target=_sync_car_photos, args=(v.id, list(photos)), daemon=True).start()
+        if SYNC_PHOTOS_BG:
+            threading.Thread(target=_sync_car_photos, args=(v.id, list(photos)), daemon=True).start()
+        else:
+            _sync_car_photos(v.id, list(photos))
 
-    return JsonResponse({"ok": True, "action": new_status, "created": created, "code": code, "photos": len(photos or [])})
+    return _stock_reply(v, new_status, code, created=created,
+                        photos=len(photos) if isinstance(photos, list) else 0)
+
+
+SYNC_PHOTOS_BG = True   # เทสต์ปิดไว้ (thread โหลดรูปไม่ให้วิ่งชนฐานข้อมูลทดสอบ)
+
+
+def stock_redirect(request, code):
+    """/stock/<รหัสรถ backend>/ → หน้ารถบนเว็บ — ระบบหลังบ้านใช้ทำลิงก์ "ดูบนเว็บ" โดยไม่ต้องรู้ slug
+    รถที่ยังไม่ Active = ลูกค้าเปิดไม่ได้ (404) · staff เปิดดูได้"""
+    v = (Vehicle.objects.filter(_visible(request), stock_code=str(code or "").strip())
+         .order_by("-created_at").first())
+    if not v:
+        from django.http import Http404
+        raise Http404("ไม่พบรถคันนี้บนเว็บ")
+    return redirect(v.get_absolute_url())
 
 
 def home(request):
@@ -283,8 +376,8 @@ def all_cars(request):
 
 def car_detail(request, slug):
     car = get_object_or_404(
-        Vehicle.objects.select_related("brand", "car_type", "branch"),
-        slug=slug, deleted_at__isnull=True,
+        Vehicle.objects.select_related("brand", "car_type", "branch").filter(_visible(request)),
+        slug=slug,
     )
     related = (
         _available()
@@ -303,7 +396,7 @@ def book_car(request, slug):
     """เดโม: จองรถออนไลน์ — โอนมัดจำผ่าน PromptPay QR แล้วแนบสลิป
     เมื่อจองสำเร็จจะตั้งรถเป็น 'จองแล้ว' ทันที (กันคนอื่นจองซ้ำ)
     """
-    car = get_object_or_404(Vehicle, slug=slug, deleted_at__isnull=True)
+    car = get_object_or_404(Vehicle.objects.filter(_visible(request)), slug=slug)
     s = SiteSetting.get()
     available = car.status == "available"
 
@@ -339,7 +432,7 @@ def book_car(request, slug):
 
 def compare(request):
     slugs = [s for s in request.GET.getlist("car") if s][:3]
-    cars = list(Vehicle.objects.filter(slug__in=slugs, deleted_at__isnull=True).select_related("brand", "car_type"))
+    cars = list(Vehicle.objects.filter(_visible(request), slug__in=slugs).select_related("brand", "car_type"))
     return render(request, "compare.html", {"cars": cars})
 
 

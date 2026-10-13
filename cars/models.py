@@ -81,6 +81,11 @@ class Vehicle(models.Model):
     # ผูกกับ "รถจริงในสต็อก" ฝั่ง backend (SaleforceOxletauto) ผ่าน API — เก็บ Car.code
     # (ไม่ใช้ FK เพราะคนละฐานข้อมูล/โปรเจกต์ · sync ผ่าน /api/cars/available) · ว่าง = รถที่เพิ่มเองในเว็บ
     stock_code = models.CharField("รหัสสต็อก (backend)", max_length=12, blank=True, db_index=True)
+    # ★ ปุ่ม Active ฝั่ง backend — รถจากสต็อกขึ้นหน้าเว็บเมื่อกด Active เท่านั้น (False = ซ่อนจากลูกค้า
+    #   แต่ประกาศ/ราคา/รูปที่ staff เติมไว้ยังอยู่ครบ กด Active อีกครั้งก็กลับมา) · รถที่เพิ่มเองในเว็บ = True เสมอ
+    listed = models.BooleanField(
+        "แสดงบนหน้าเว็บ", default=True,
+        help_text="รถจากสต็อก backend: เปิด/ปิดด้วยปุ่ม Active ในระบบหลังบ้าน (แก้ที่นี่จะถูกทับตอน sync ครั้งถัดไป)")
     brand = models.ForeignKey(Brand, on_delete=models.PROTECT, related_name="vehicles", verbose_name="ยี่ห้อ")
     model = models.CharField("รุ่น", max_length=80)
     submodel = models.CharField("รุ่นย่อย", max_length=120, blank=True)

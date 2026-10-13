@@ -20,6 +20,8 @@ urlpatterns = [
     path("api/chat/", views.chat, name="chat"),
     # webhook รับจาก backend (SaleforceOxletauto) — sync สถานะรถ realtime (ยืนยันด้วย secret)
     path("api/stock-update/", views.api_stock_update, name="api_stock_update"),
+    # ลิงก์ "ดูบนเว็บ" จากระบบหลังบ้าน (รู้แค่รหัสรถ ไม่รู้ slug) → เด้งไปหน้ารถ
+    path("stock/<str:code>/", views.stock_redirect, name="stock_redirect"),
     # ล็อกอิน/ออกจากระบบ (หน้าเว็บ — เด้งกลับหน้าแรกหลังล็อกอิน)
     path("login/", auth_views.LoginView.as_view(), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
