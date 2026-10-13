@@ -26,7 +26,7 @@ INSTAGRAM_DM_URL = f"https://ig.me/m/{IG_USER}"
 
 def car_inquiry_text(title, url="", price=None, plate=""):
     """ข้อความทักถามรถเฉพาะคัน (plain text) — ใช้ทั้งลิงก์ LINE และปุ่มคัดลอกไปวางใน Messenger/IG"""
-    lines = ["สนใจออกรถคันนี้ครับ/ค่ะ 🚗", title]
+    lines = ["สนใจรถคันนี้ มาจากเว็บ Oxlet ครับ/ค่ะ 🚗", title]
     if plate:
         lines.append(f"ทะเบียน {plate}")
     if price:
@@ -34,6 +34,19 @@ def car_inquiry_text(title, url="", price=None, plate=""):
     if url:
         lines.append(url)
     lines.append("รบกวนติดต่อกลับด้วยครับ/ค่ะ 🙏")
+    return "\n".join(lines)
+
+
+def car_booking_text(title, url="", price=None, plate=""):
+    """ข้อความ "ขอจองคันนี้" — ปุ่มจองรถตอนปิดหน้าจองออนไลน์ (settings.ONLINE_BOOKING)
+    บรรทัดแรกบอกว่ามาจากเว็บ แอดมินที่ตอบแชทรู้ทันทีว่าลีดมาจากช่องทางไหน"""
+    lines = ["สนใจรุ่นนี้ มาจากเว็บ Oxlet ครับ/ค่ะ 🚗", "อยากจองคันนี้", title]
+    if plate:
+        lines.append(f"ทะเบียน {plate}")
+    if price:
+        lines.append(f"ราคา {price:,} บาท")
+    if url:
+        lines.append(url)
     return "\n".join(lines)
 
 

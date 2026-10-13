@@ -29,6 +29,10 @@ SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
 # ว่าง = ปิดรับ (endpoint /api/stock-update/ จะตอบ 401 จนกว่าจะตั้ง)
 STOCK_SYNC_SECRET = os.getenv("STOCK_SYNC_SECRET", "")
 
+# หน้าจองรถออนไลน์ (สแกน QR พร้อมเพย์ มัดจำ) — ปิดไว้ก่อน (ต.ค.69 เจ้าของสั่ง):
+# ปุ่มจองเปิดแชท LINE @oxletauto พร้อมพิมพ์ "สนใจรุ่นนี้ มาจากเว็บ Oxlet" รอไว้แทน · ON = กลับไปใช้หน้า QR
+ONLINE_BOOKING = env_bool("ONLINE_BOOKING", False)
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

@@ -19,7 +19,7 @@ from django.views.decorators.http import require_POST
 
 from . import constants
 from .ai import chat_reply
-from .contact_links import car_inquiry_text, line_message_url
+from .contact_links import car_booking_text, car_inquiry_text, line_message_url
 from .forms import (
     BookingForm,
     BranchForm,
@@ -388,15 +388,29 @@ def car_detail(request, slug):
         car.title, request.build_absolute_uri(),
         getattr(car, "price", None), getattr(car, "plate", ""),
     )
-    ctx = {"car": car, "related": related, "line_url": line_message_url(inquiry_text)}
+    ctx = {"car": car, "related": related, "line_url": line_message_url(inquiry_text),
+           "online_booking": settings.ONLINE_BOOKING,
+           "book_line_url": _book_line_url(request, car)}
     return render(request, "car_detail.html", ctx)
+
+
+def _book_line_url(request, car):
+    """ลิงก์แชท LINE @oxletauto พร้อมข้อความขอจองคันนี้ (ใช้แทนหน้าจอง QR ตอน ONLINE_BOOKING ปิด)"""
+    return line_message_url(car_booking_text(
+        car.title, request.build_absolute_uri(car.get_absolute_url()),
+        getattr(car, "price", None), getattr(car, "plate", ""),
+    ))
 
 
 def book_car(request, slug):
     """เดโม: จองรถออนไลน์ — โอนมัดจำผ่าน PromptPay QR แล้วแนบสลิป
     เมื่อจองสำเร็จจะตั้งรถเป็น 'จองแล้ว' ทันที (กันคนอื่นจองซ้ำ)
+    ★ ต.ค.69 ปิดไว้ก่อน (settings.ONLINE_BOOKING) → เด้งไปแชท LINE พร้อมข้อความขอจองแทน
+      (ลิงก์เก่าที่เคยแชร์ / bookmark ยังพาลูกค้าไปจองได้ ไม่เจอหน้า QR)
     """
     car = get_object_or_404(Vehicle.objects.filter(_visible(request)), slug=slug)
+    if not settings.ONLINE_BOOKING:
+        return redirect(_book_line_url(request, car))
     s = SiteSetting.get()
     available = car.status == "available"
 

@@ -69,8 +69,14 @@
       </ul>
       <div class="d-grid gap-2">
         {% if car.status == 'available' %}
+        {% if online_booking %}
         <a href="{% url 'book_car' car.slug %}" class="btn btn-warning fw-semibold"><i class="bi bi-bookmark-check-fill"></i> จองรถออนไลน์ · มัดจำกันคัน <span class="badge bg-dark ms-1">เดโม</span></a>
         <div class="text-center small text-success mb-1"><i class="bi bi-shield-check"></i> จองในเว็บรับโปรพิเศษ · ไฟแนนซ์ไม่ผ่าน คืนมัดจำเต็มจำนวน</div>
+        {% else %}
+        {# หน้าจอง QR ปิดไว้ก่อน (settings.ONLINE_BOOKING) — ปุ่มจองเปิดแชท LINE พร้อมข้อความขอจองคันนี้ #}
+        <a href="{{ book_line_url }}" target="_blank" rel="noopener" class="btn btn-warning fw-semibold"><i class="bi bi-bookmark-check-fill"></i> จองรถคันนี้ทาง LINE</a>
+        <div class="text-center small text-muted mb-1"><i class="bi bi-chat-dots"></i> กดแล้วเปิดแชท LINE อ๊อกเล็ตธ์ออโต้ · มีข้อความรถคันนี้พิมพ์รอไว้ให้ กดส่งได้เลย</div>
+        {% endif %}
         {% elif car.status == 'reserved' %}
         <button class="btn btn-secondary" disabled><i class="bi bi-lock-fill"></i> รถคันนี้ถูกจองแล้ว</button>
         {% endif %}
