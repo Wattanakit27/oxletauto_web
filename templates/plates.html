@@ -17,8 +17,8 @@
 </style>
 <div class="container py-4">
   <div class="d-flex align-items-center mb-1">
-    <h3 class="text-ox mb-0">🔢 ป้ายทะเบียนเลขสวย</h3>
-    {% if request.user.is_staff %}<a href="{% url 'plate_add' %}" class="btn btn-success btn-sm ms-auto">➕ เพิ่มป้าย</a>{% endif %}
+    <h3 class="text-ox mb-0"><i class="bi bi-123"></i> ป้ายทะเบียนเลขสวย</h3>
+    {% if request.user.is_staff %}<a href="{% url 'plate_add' %}" class="btn btn-success btn-sm ms-auto"><i class="bi bi-plus-lg"></i> เพิ่มป้าย</a>{% endif %}
   </div>
   <p class="text-muted">เลขมงคล เลขสวย ราคาคุยกันได้ · สอบถาม/จองผ่าน LINE ได้เลย</p>
 
@@ -66,7 +66,7 @@
         <div class="form-check form-switch mb-0">
           <input class="form-check-input" type="checkbox" role="switch" id="ownOnly" name="own" value="1"
                  {% if current.own == '1' %}checked{% endif %} onchange="this.form.submit()">
-          <label class="form-check-label small" for="ownOnly">⭐ เฉพาะป้ายของร้าน ({{ own_total }})</label>
+          <label class="form-check-label small" for="ownOnly"><i class="bi bi-star-fill"></i> เฉพาะป้ายของร้าน ({{ own_total }})</label>
         </div>
         {% endif %}
         <span class="small text-muted">พบ <strong>{{ total }}</strong> ป้าย</span>
@@ -79,7 +79,7 @@
 
   {% if own_plates %}
   <div class="d-flex align-items-center gap-2 mb-2 own-head">
-    <h5 class="mb-0">⭐ ป้ายของร้านเรา</h5>
+    <h5 class="mb-0"><i class="bi bi-star-fill"></i> ป้ายของร้านเรา</h5>
     <span class="badge bg-warning text-dark">{{ own_plates|length }} ป้าย</span>
     <span class="small text-muted d-none d-md-inline">ถือป้ายเอง โอนเองจบในที่เดียว ราคาคุยกันได้</span>
   </div>
@@ -96,7 +96,7 @@
   {% endif %}
 
   {% if not plates %}
-  <p class="text-muted">ไม่พบป้ายที่ตรงเงื่อนไข{% if request.user.is_staff %} — กด "➕ เพิ่มป้าย" เพื่อลงป้ายของร้านได้เลย{% endif %}</p>
+  <p class="text-muted">ไม่พบป้ายที่ตรงเงื่อนไข{% if request.user.is_staff %} — กด "เพิ่มป้าย" เพื่อลงป้ายของร้านได้เลย{% endif %}</p>
   {% endif %}
 </div>
 {% endblock %}

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container py-4" style="max-width:840px">
   <div class="d-flex align-items-center mb-2">
-    <h3 class="text-ox mb-0">🗑️ ถังขยะ (รถที่ลบ)</h3>
+    <h3 class="text-ox mb-0"><i class="bi bi-trash"></i> ถังขยะ (รถที่ลบ)</h3>
     <a href="{% url 'all_cars' %}" class="btn btn-sm btn-outline-secondary ms-auto">← กลับรายการรถ</a>
   </div>
   <p class="text-muted small mb-3">รถในถังขยะจะถูกลบถาวรอัตโนมัติหลัง 30 วัน · กู้คืนได้ก่อนหมดเวลา</p>
@@ -20,14 +20,14 @@
       </div>
     </div>
     <form method="post" action="{% url 'car_restore' car.slug %}">{% csrf_token %}
-      <button class="btn btn-sm btn-success">♻️ กู้คืน</button>
+      <button class="btn btn-sm btn-success"><i class="bi bi-arrow-counterclockwise"></i> กู้คืน</button>
     </form>
     <form method="post" action="{% url 'car_purge' car.slug %}" onsubmit="return confirm('ลบ {{ car.title|escapejs }} ถาวรทันที? กู้คืนไม่ได้')">{% csrf_token %}
       <button class="btn btn-sm btn-outline-danger">ลบถาวร</button>
     </form>
   </div></div>
   {% empty %}
-  <p class="text-muted">ถังขยะว่าง 🎉</p>
+  <p class="text-muted">ถังขยะว่าง</p>
   {% endfor %}
 </div>
 {% endblock %}

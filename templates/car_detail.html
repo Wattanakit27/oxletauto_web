@@ -23,10 +23,10 @@
   {% if request.user.is_staff %}
   <div class="alert alert-warning d-flex align-items-center gap-2 py-2">
     <span class="me-auto"><i class="bi bi-shield-lock-fill"></i> <strong>โหมดแอดมิน</strong></span>
-    <a href="{% url 'car_edit' car.slug %}" class="btn btn-sm btn-dark">✏️ แก้ไขรถคันนี้</a>
+    <a href="{% url 'car_edit' car.slug %}" class="btn btn-sm btn-dark"><i class="bi bi-pencil"></i> แก้ไขรถคันนี้</a>
     <form method="post" action="{% url 'car_delete' car.slug %}" onsubmit="return confirm('ลบรถคันนี้ถาวร? ลบแล้วกู้คืนไม่ได้')">
       {% csrf_token %}
-      <button class="btn btn-sm btn-outline-danger">🗑️ ลบ</button>
+      <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> ลบ</button>
     </form>
   </div>
   {% endif %}

@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container py-4" style="max-width:840px">
   <div class="d-flex align-items-center mb-2">
-    <h3 class="text-ox mb-0">🏷️ รถที่ขายแล้ว</h3>
+    <h3 class="text-ox mb-0"><i class="bi bi-tag"></i> รถที่ขายแล้ว</h3>
     <a href="{% url 'all_cars' %}" class="btn btn-sm btn-outline-secondary ms-auto">← กลับรายการรถ</a>
   </div>
   <p class="text-muted small mb-3">คลังรถที่ขายไปแล้ว (ลูกค้าไม่เห็น) · ดึงกลับมาขายใหม่หรือแก้ไขได้</p>
@@ -18,9 +18,9 @@
       <div class="small text-muted">{{ car.price|intcomma }} ฿ · ขายเมื่อ {{ car.updated_at|date:"j M Y" }}</div>
     </div>
     <a href="{{ car.get_absolute_url }}" target="_blank" class="btn btn-sm btn-outline-secondary">ดู</a>
-    <a href="{% url 'car_edit' car.slug %}" class="btn btn-sm btn-dark">✏️ แก้ไข</a>
+    <a href="{% url 'car_edit' car.slug %}" class="btn btn-sm btn-dark"><i class="bi bi-pencil"></i> แก้ไข</a>
     <form method="post" action="{% url 'car_relist' car.slug %}" onsubmit="return confirm('ดึง {{ car.title|escapejs }} กลับมาขายใหม่?')">{% csrf_token %}
-      <button class="btn btn-sm btn-success">♻️ ดึงกลับมาขาย</button>
+      <button class="btn btn-sm btn-success"><i class="bi bi-arrow-counterclockwise"></i> ดึงกลับมาขาย</button>
     </form>
   </div></div>
   {% empty %}

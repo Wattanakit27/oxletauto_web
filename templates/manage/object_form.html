@@ -8,7 +8,7 @@
     {% if delete_url %}
     <form method="post" action="{{ delete_url }}" class="ms-auto" onsubmit="return confirm('ลบรายการนี้ถาวร? กู้คืนไม่ได้')">
       {% csrf_token %}
-      <button class="btn btn-sm btn-outline-danger">🗑️ ลบ</button>
+      <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> ลบ</button>
     </form>
     {% endif %}
   </div>
@@ -36,7 +36,7 @@
       </div>
     </div>
     <div class="card-footer bg-white d-flex gap-2">
-      <button class="btn btn-ox px-4">💾 บันทึก</button>
+      <button class="btn btn-ox px-4"><i class="bi bi-save"></i> บันทึก</button>
       <a href="{{ cancel_url }}" class="btn btn-outline-secondary">ยกเลิก</a>
     </div>
   </form>

@@ -4,7 +4,7 @@
 <div class="container py-4">
   <div class="d-flex align-items-center">
     <h3 class="text-ox mb-0">เกี่ยวกับ {{ SITE_NAME }}</h3>
-    {% if request.user.is_staff %}<a href="{% url 'site_settings' %}" class="btn btn-sm btn-dark ms-auto">✏️ แก้ไขเนื้อหา</a>{% endif %}
+    {% if request.user.is_staff %}<a href="{% url 'site_settings' %}" class="btn btn-sm btn-dark ms-auto"><i class="bi bi-pencil"></i> แก้ไขเนื้อหา</a>{% endif %}
   </div>
   <p class="lead mt-2">{{ SITE_TAGLINE }} — เจ้าแรกของไทย</p>
   <div>{{ about_text|linebreaks }}</div>

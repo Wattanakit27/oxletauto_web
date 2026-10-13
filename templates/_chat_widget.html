@@ -153,7 +153,7 @@
     // มือถือไม่มี hover -> คลิกเปิดแชต = เด้งครึ่งตัวออกมา (คลาส .popped)
     bubble.classList.toggle('popped', panel.classList.contains('open'));
     if(panel.classList.contains('open')){
-      if(!greeted){ addMsg('bot', 'สวัสดีค่ะ 🙏 น้องอ๊อกเล็ตธ์ยินดีช่วยหารถค่ะ\nลองพิมพ์ยี่ห้อ/รุ่น หรืองบที่สนใจได้เลย เช่น "Honda Civic งบผ่อนเดือนละ 8,000"'); greeted = true; }
+      if(!greeted){ addMsg('bot', 'สวัสดีค่ะ น้องอ๊อกเล็ตธ์ยินดีช่วยหารถค่ะ\nลองพิมพ์ยี่ห้อ/รุ่น หรืองบที่สนใจได้เลย เช่น "Honda Civic งบผ่อนเดือนละ 8,000"'); greeted = true; }
       setTimeout(function(){ input.focus(); }, 100);
     }
   }
@@ -196,7 +196,7 @@
     })
     .catch(function(){
       typing.remove();
-      addMsg('bot', 'ขออภัยค่ะ เชื่อมต่อไม่ได้ 🙏 ทักไลน์ @oxletauto ได้เลยนะคะ');
+      addMsg('bot', 'ขออภัยค่ะ เชื่อมต่อไม่ได้ ทักไลน์ @oxletauto ได้เลยนะคะ');
     })
     .finally(function(){ sendBtn.disabled = false; input.focus(); });
   });

@@ -4,7 +4,7 @@
 <div class="container py-4">
   <div class="d-flex align-items-center mb-3">
     <h3 class="text-ox mb-0">โปรโมชัน</h3>
-    {% if request.user.is_staff %}<a href="{% url 'promo_add' %}" class="btn btn-success btn-sm ms-auto">➕ เพิ่มโปรโมชัน</a>{% endif %}
+    {% if request.user.is_staff %}<a href="{% url 'promo_add' %}" class="btn btn-success btn-sm ms-auto"><i class="bi bi-plus-lg"></i> เพิ่มโปรโมชัน</a>{% endif %}
   </div>
   <div class="row g-3">
     {% for p in promotions %}
@@ -16,9 +16,9 @@
         {% if p.vehicle %}<a href="{{ p.vehicle.get_absolute_url }}" class="btn btn-ox btn-sm">ดูรถคันนี้</a>{% endif %}
         {% if request.user.is_staff %}
         <div class="d-flex gap-1 mt-2 pt-2 border-top">
-          <a href="{% url 'promo_edit' p.pk %}" class="btn btn-sm btn-dark flex-fill">✏️ แก้ไข</a>
+          <a href="{% url 'promo_edit' p.pk %}" class="btn btn-sm btn-dark flex-fill"><i class="bi bi-pencil"></i> แก้ไข</a>
           <form method="post" action="{% url 'promo_delete' p.pk %}" class="flex-fill" onsubmit="return confirm('ลบโปรนี้?')">{% csrf_token %}
-            <button class="btn btn-sm btn-outline-danger w-100">🗑️</button>
+            <button class="btn btn-sm btn-outline-danger w-100"><i class="bi bi-trash"></i></button>
           </form>
         </div>
         {% endif %}

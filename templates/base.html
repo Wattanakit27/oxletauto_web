@@ -77,14 +77,14 @@
         <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">ติดต่อเรา</a></li>
         {% if request.user.is_staff %}
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-ox fw-bold" href="#" id="adminMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">⚙️ จัดการ</a>
+          <a class="nav-link dropdown-toggle text-ox fw-bold" href="#" id="adminMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-gear"></i> จัดการ</a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminMenu">
-            <li><a class="dropdown-item" href="{% url 'car_add' %}">➕ เพิ่มรถ</a></li>
-            <li><a class="dropdown-item" href="{% url 'plate_add' %}">➕ เพิ่มป้ายทะเบียน</a></li>
+            <li><a class="dropdown-item" href="{% url 'car_add' %}"><i class="bi bi-plus-lg"></i> เพิ่มรถ</a></li>
+            <li><a class="dropdown-item" href="{% url 'plate_add' %}"><i class="bi bi-plus-lg"></i> เพิ่มป้ายทะเบียน</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{% url 'car_sold' %}">🏷️ รถขายแล้ว</a></li>
-            <li><a class="dropdown-item" href="{% url 'car_trash' %}">🗑️ ถังขยะ</a></li>
-            <li><a class="dropdown-item" href="{% url 'site_settings' %}">⚙️ ตั้งค่าเว็บ</a></li>
+            <li><a class="dropdown-item" href="{% url 'car_sold' %}"><i class="bi bi-tag"></i> รถขายแล้ว</a></li>
+            <li><a class="dropdown-item" href="{% url 'car_trash' %}"><i class="bi bi-trash"></i> ถังขยะ</a></li>
+            <li><a class="dropdown-item" href="{% url 'site_settings' %}"><i class="bi bi-gear"></i> ตั้งค่าเว็บ</a></li>
             <li><hr class="dropdown-divider"></li>
             <li>
               <form method="post" action="{% url 'logout' %}">{% csrf_token %}
@@ -130,11 +130,11 @@
         <h6>สาขา</h6>
         {% for b in branches %}
         <p class="small mb-2">
-          📍 <strong>{{ b.name }}</strong><br>
+          <i class="bi bi-geo-alt-fill me-1"></i><strong>{{ b.name }}</strong><br>
           {% if b.map_url or b.google_maps_url or b.lat and b.lng or b.address %}
           <a href="{% if b.map_url %}{{ b.map_url }}{% elif b.google_maps_url %}{{ b.google_maps_url }}{% elif b.lat and b.lng %}https://www.google.com/maps/search/?api=1&query={{ b.lat }},{{ b.lng }}{% else %}https://www.google.com/maps/search/?api=1&query={{ b.address|urlencode }}{% endif %}"
              target="_blank" rel="noopener" class="text-white-50 text-decoration-none">
-            {{ b.address }}<br><span class="text-decoration-underline">🗺️ ดูแผนที่</span>
+            {{ b.address }}<br><i class="bi bi-map me-1"></i><span class="text-decoration-underline">ดูแผนที่</span>
           </a>
           {% else %}{{ b.address }}{% endif %}
         </p>{% endfor %}
