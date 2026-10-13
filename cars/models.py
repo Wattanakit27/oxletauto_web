@@ -316,6 +316,9 @@ class Lead(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, blank=True, related_name="leads", verbose_name="รถที่สนใจ")
     is_handled = models.BooleanField("ติดตามแล้ว", default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    # ต.ค.69 — ส่งต่อเข้าห้องพัก Lead ของ SaleForce (กลุ่ม LINE "ADMIN เก็บ Lead") · ว่าง = ยังไม่ได้ส่ง/ไม่ได้ตั้งค่า
+    forwarded_at = models.DateTimeField("ส่งเข้าห้องพัก Lead เมื่อ", null=True, blank=True)
+    forward_error = models.CharField("ส่งไม่สำเร็จเพราะ", max_length=200, blank=True)
 
     class Meta:
         verbose_name = "Lead (คนสนใจ)"

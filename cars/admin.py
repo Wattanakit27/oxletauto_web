@@ -132,7 +132,7 @@ class ReviewAdmin(admin.ModelAdmin):
 
 @admin.register(Lead)
 class LeadAdmin(admin.ModelAdmin):
-    list_display = ("name", "phone", "vehicle", "source_page", "is_handled", "created_at")
+    list_display = ("name", "phone", "vehicle", "source_page", "is_handled", "forwarded_at", "forward_error", "created_at")
     list_editable = ("is_handled",)
     list_filter = ("is_handled", "source_page")
     search_fields = ("name", "phone", "email")

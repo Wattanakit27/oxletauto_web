@@ -33,6 +33,10 @@ STOCK_SYNC_SECRET = os.getenv("STOCK_SYNC_SECRET", "")
 # ปุ่มจองเปิดแชท LINE @oxletauto พร้อมพิมพ์ "สนใจรุ่นนี้ มาจากเว็บ Oxlet" รอไว้แทน · ON = กลับไปใช้หน้า QR
 ONLINE_BOOKING = env_bool("ONLINE_BOOKING", False)
 
+# ฟอร์ม "ขอราคาพิเศษ / นัดดูรถ" → ส่งต่อเข้าห้องพัก Lead ของ SaleForce (กลุ่ม LINE "ADMIN เก็บ Lead")
+# เช่น https://srv1793506.hstgr.cloud/api/showroom/lead · ใช้ STOCK_SYNC_SECRET ตัวเดียวกัน · ว่าง = ไม่ส่ง (เก็บในเว็บนี้อย่างเดียว)
+SALEFORCE_LEAD_URL = os.getenv("SALEFORCE_LEAD_URL", "")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

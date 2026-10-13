@@ -1,6 +1,7 @@
 import json
 import threading
 import time
+import urllib.error
 import urllib.request
 
 from django.conf import settings
@@ -542,7 +543,7 @@ def _save_lead(request, source=""):
     slug = request.POST.get("vehicle")
     if slug:
         vehicle = Vehicle.objects.filter(slug=slug).first()
-    Lead.objects.create(
+    lead = Lead.objects.create(
         name=request.POST.get("name", "").strip(),
         phone=request.POST.get("phone", "").strip(),
         email=request.POST.get("email", "").strip(),
@@ -550,7 +551,60 @@ def _save_lead(request, source=""):
         source_page=source,
         vehicle=vehicle,
     )
-    # TODO เฟสถัดไป: push เข้า LINE กลุ่มเซล (cars/line.py)
+    # ต.ค.69 — ส่งต่อเข้าห้องพัก Lead ของ SaleForce (เจ้าของสั่ง "กรอกแล้วให้ส่งไปที่กลุ่มพักหลีด")
+    if settings.SALEFORCE_LEAD_URL and settings.STOCK_SYNC_SECRET:
+        car_url = request.build_absolute_uri(vehicle.get_absolute_url()) if vehicle else ""
+        if FORWARD_BG:
+            threading.Thread(target=_forward_lead, args=(lead.pk, car_url), daemon=True).start()
+        else:
+            _forward_lead(lead.pk, car_url)
+
+
+FORWARD_BG = True   # เทสต์ปิดไว้ (ส่งตรงในคำขอ ไม่แตก thread ชนฐานข้อมูลทดสอบ)
+
+
+def _forward_lead(lead_id, car_url=""):
+    """ส่งลีดจากฟอร์มไป SaleForce (POST JSON + X-Stock-Secret) แล้วจดผลลงแถว Lead — ส่งไม่ถึงต้องเห็นในหน้า admin
+    (เดิมฟอร์มนี้เก็บเฉยๆ ไม่มีใครรู้ว่ามีลูกค้ากรอก) · ไม่โยน error (ลูกค้ากรอกเสร็จแล้ว ห้ามพังหน้าเว็บ)"""
+    from django.db import connection
+    try:
+        lead = Lead.objects.select_related("vehicle", "vehicle__brand").filter(pk=lead_id).first()
+        if not lead:
+            return
+        v = lead.vehicle
+        payload = {
+            "lead_id": lead.pk, "name": lead.name, "phone": lead.phone, "email": lead.email,
+            "message": lead.message, "source_page": lead.source_page,
+            "car": ({"title": v.title, "code": v.stock_code, "plate": v.plate, "price": v.price, "url": car_url}
+                    if v else {}),
+        }
+        req = urllib.request.Request(
+            settings.SALEFORCE_LEAD_URL, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+            headers={"Content-Type": "application/json", "X-Stock-Secret": settings.STOCK_SYNC_SECRET,
+                     "User-Agent": "oxlet-showroom"}, method="POST")
+        err = ""
+        try:
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                res = json.loads(resp.read().decode("utf-8") or "{}")
+        except urllib.error.HTTPError as e:
+            try:
+                res = json.loads(e.read().decode("utf-8") or "{}")
+            except Exception:
+                res = {}
+            err = res.get("error") or ("SaleForce ตอบ %s" % e.code)
+        except Exception as e:
+            res, err = {}, "ต่อ SaleForce ไม่ได้: %s" % str(e)[:120]
+        if not err and res.get("ok"):
+            # เข้าห้องพัก Lead แล้ว · โพสต์ LINE ไม่สำเร็จ = แจ้งเหตุผลไว้ (ลีดยังอยู่ในห้องพัก Lead ของ Connect)
+            err = "" if res.get("pushed", True) else "เข้าห้องพัก Lead แล้ว แต่โพสต์ LINE ไม่สำเร็จ: %s" % (res.get("error") or "-")
+            Lead.objects.filter(pk=lead.pk).update(forwarded_at=timezone.now(), forward_error=err[:200])
+        else:
+            Lead.objects.filter(pk=lead.pk).update(forward_error=(err or res.get("error") or "ส่งไม่สำเร็จ")[:200])
+    except Exception:
+        pass
+    finally:
+        if FORWARD_BG:
+            connection.close()
 
 
 @require_POST
